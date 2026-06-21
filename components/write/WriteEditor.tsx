@@ -4,21 +4,17 @@ import Link from 'next/link';
 import { DraftPanel } from './DraftPanel';
 import { ChatPanel } from './ChatPanel';
 
-const WP = process.env.NEXT_PUBLIC_WP_API_URL ?? 'https://www.nutrifarmer.kr/wp-json';
+export const WP_API = process.env.NEXT_PUBLIC_WP_API_URL ?? 'https://www.nutrifarmer.kr/wp-json';
 
 export interface WpCategory { id: number; name: string; slug: string; }
 export interface WpPost {
-  id: number; title: { rendered: string }; content: { rendered: string };
-  excerpt: { rendered: string }; categories: number[]; status: string; link: string;
-}
-
-export interface DraftState {
-  categoryId: number;
-  title: string;
-  excerpt: string;
-  body: string;
-  images: InsertedImage[];
-  postId: number | null;       // 기존 글 수정시
+  id: number;
+  title: { rendered: string };
+  content: { rendered: string };
+  excerpt: { rendered: string };
+  categories: number[];
+  status: string;
+  link: string;
 }
 
 export interface InsertedImage {
@@ -28,177 +24,186 @@ export interface InsertedImage {
   position: 'top' | 'inline' | 'bottom';
 }
 
+export interface DraftState {
+  categoryId: number;
+  title: string;
+  excerpt: string;
+  body: string;
+  images: InsertedImage[];
+  postId: number | null;
+}
+
 const EMPTY_DRAFT: DraftState = {
   categoryId: 0, title: '', excerpt: '', body: '', images: [], postId: null,
 };
 
-/* ──────────────────────────────────────────── */
+const LS_DRAFT_KEY = 'nf-write-draft-v2';
+
+/* ───────────────────────────────────────── */
 export function WriteEditor() {
   const [categories, setCategories] = useState<WpCategory[]>([]);
   const [draft, setDraft] = useState<DraftState>(EMPTY_DRAFT);
-  const [tab, setTab] = useState<'correct' | 'publish'>('correct');
+  const [tab, setTab]     = useState<'correct' | 'publish'>('correct');
   const [splitPct, setSplitPct] = useState(50);
-  const [status, setStatus] = useState('');
-  const splitRef = useRef<HTMLDivElement>(null);
+  const [statusMsg, setStatusMsg] = useState('');
+  const splitRef   = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
-  /* 카테고리 로드 */
+  /* 상태 메시지 자동 소멸 */
   useEffect(() => {
-    fetch(`${WP}/wp/v2/categories?per_page=50&hide_empty=false`)
-      .then(r => r.json())
-      .then((cats: WpCategory[]) => setCategories(cats.filter(c => c.slug !== 'uncategorized')))
+    if (!statusMsg) return;
+    const t = setTimeout(() => setStatusMsg(''), 4000);
+    return () => clearTimeout(t);
+  }, [statusMsg]);
+
+  /* 카테고리 로드 (실패해도 무시) */
+  useEffect(() => {
+    fetch(`${WP_API}/wp/v2/categories?per_page=50&hide_empty=false`)
+      .then(r => r.ok ? r.json() : [])
+      .then((cats: WpCategory[]) =>
+        setCategories(cats.filter((c: WpCategory) => c.slug !== 'uncategorized'))
+      )
       .catch(() => {});
   }, []);
 
-  /* 로컬 저장 */
-  useEffect(() => {
-    try { localStorage.setItem('nf-write-draft', JSON.stringify(draft)); } catch {}
-  }, [draft]);
-
-  /* 로컬 복원 */
+  /* localStorage 복원 (초기 1회) */
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('nf-write-draft');
-      if (saved) setDraft(JSON.parse(saved));
+      const raw = localStorage.getItem(LS_DRAFT_KEY);
+      if (raw) setDraft(JSON.parse(raw));
     } catch {}
   }, []);
 
+  /* localStorage 자동 저장 */
+  useEffect(() => {
+    try { localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(draft)); } catch {}
+  }, [draft]);
+
   /* ── 스플리터 드래그 ── */
-  const onSplitMouseDown = useCallback(() => {
+  const onSplitDown = useCallback(() => {
     isDragging.current = true;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
-    const onMove = (e: MouseEvent) => {
+    const move = (e: MouseEvent) => {
       if (!isDragging.current || !splitRef.current) return;
-      const parent = splitRef.current.parentElement!;
-      const rect = parent.getBoundingClientRect();
-      const pct = ((e.clientX - rect.left) / rect.width) * 100;
-      setSplitPct(Math.min(75, Math.max(25, pct)));
+      const rect = splitRef.current.parentElement!.getBoundingClientRect();
+      const pct  = ((e.clientX - rect.left) / rect.width) * 100;
+      setSplitPct(Math.min(74, Math.max(26, pct)));
     };
-    const onUp = () => {
+    const up = () => {
       isDragging.current = false;
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
     };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
   }, []);
 
-  /* ── 기존 글 불러오기 ── */
-  const loadPost = useCallback((post: WpPost) => {
-    setDraft(d => ({
-      ...d,
-      postId: post.id,
-      title: post.title.rendered.replace(/<[^>]+>/g, ''),
-      excerpt: post.excerpt.rendered.replace(/<[^>]+>/g, ''),
-      body: post.content.rendered.replace(/<[^>]+>/g, ''),
-      categoryId: post.categories[0] ?? 0,
-    }));
-    setTab('correct');
-    setStatus(`"${post.title.rendered.replace(/<[^>]+>/g, '')}" 불러옴`);
+  /* ── 이미지 삽입 ── */
+  const insertImage = useCallback((img: InsertedImage) => {
+    setDraft(prev => {
+      const tag = `\n![${img.alt || '이미지'}](${img.url})\n`;
+      let body = prev.body;
+      if (img.position === 'top')    body = tag + body;
+      if (img.position === 'bottom') body = body + tag;
+      return { ...prev, images: [...prev.images, img], body };
+    });
   }, []);
 
-  /* ── WordPress에 저장/업데이트 ── */
-  const saveToWP = useCallback(async (publish: boolean) => {
-    setStatus('저장 중…');
+  /* ── localStorage 저장 ── */
+  const saveDraft = useCallback(() => {
+    try {
+      localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(draft));
+      setStatusMsg('✅ 임시저장 완료 (로컬)');
+    } catch { setStatusMsg('❌ 저장 실패'); }
+  }, [draft]);
+
+  /* ── WordPress 게시 (선택적 — 실패해도 로컬 저장은 유지) ── */
+  const publishToWP = useCallback(async () => {
+    setStatusMsg('게시 중…');
     const body: Record<string, unknown> = {
-      title: draft.title,
-      content: buildContent(draft),
-      excerpt: draft.excerpt,
+      title:      draft.title || '(제목 없음)',
+      content:    buildContent(draft),
+      excerpt:    draft.excerpt,
       categories: draft.categoryId ? [draft.categoryId] : [],
-      status: publish ? 'publish' : 'draft',
+      status:     'publish',
     };
     try {
-      const endpoint = draft.postId
-        ? `${WP}/wp/v2/posts/${draft.postId}`
-        : `${WP}/wp/v2/posts`;
+      const url    = draft.postId ? `${WP_API}/wp/v2/posts/${draft.postId}` : `${WP_API}/wp/v2/posts`;
       const method = draft.postId ? 'PUT' : 'POST';
-      const r = await fetch(endpoint, {
+      const r = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(body),
       });
+      if (r.status === 401) {
+        setStatusMsg('⚠️ WordPress 로그인 필요 → WP 관리자에서 로그인 후 재시도');
+        return;
+      }
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const result: WpPost = await r.json();
       setDraft(d => ({ ...d, postId: result.id }));
-      setStatus(publish ? `✅ 게시 완료 → ${result.link}` : '✅ 임시저장 완료');
+      setStatusMsg(`✅ WordPress 게시 완료 → ${result.link}`);
     } catch (e) {
-      setStatus(`❌ 저장 실패: ${e instanceof Error ? e.message : '네트워크 오류'}`);
+      setStatusMsg(`❌ WP 게시 실패: ${e instanceof Error ? e.message : '연결 오류'} (로컬 저장은 유지됨)`);
     }
   }, [draft]);
 
-  /* ── 이미지를 본문에 삽입 ── */
-  const insertImage = useCallback((img: InsertedImage) => {
-    setDraft(d => ({ ...d, images: [...d.images, img] }));
-    const tag = `\n![${img.alt || '이미지'}](${img.url})\n`;
-    setDraft(d => {
-      const lines = d.body.split('\n');
-      if (img.position === 'top') return { ...d, body: tag + d.body };
-      if (img.position === 'bottom') return { ...d, body: d.body + tag };
-      return d; // 'inline' → 커서 위치는 DraftPanel에서 처리
-    });
+  /* ── 새 글 ── */
+  const newDraft = useCallback(() => {
+    if (draft.title || draft.body) {
+      if (!confirm('현재 작성 중인 글을 지우고 새 글을 시작할까요?')) return;
+    }
+    setDraft(EMPTY_DRAFT);
+    setTab('correct');
+    setStatusMsg('새 글 시작');
+  }, [draft]);
+
+  /* ── 재교정: 배포 → 초안 ── */
+  const goBackToCorrect = useCallback(() => {
+    setTab('correct');
+    setStatusMsg('⬅ 초안으로 돌아왔습니다. 내용을 수정하세요.');
   }, []);
 
   return (
     <div className="nfw-app">
-      {/* ── 최상단 툴바 ── */}
+      {/* 최상단 툴바 */}
       <header className="nfw-topbar">
         <div className="nfw-topbar__left">
           <Link href="/" className="nfw-topbar__home">← 홈</Link>
           <span className="nfw-topbar__badge">✨ AI 글쓰기</span>
-          {draft.title && (
-            <span className="nfw-topbar__doc-title">{draft.title}</span>
-          )}
+          {draft.title && <span className="nfw-topbar__doc-title">{draft.title}</span>}
         </div>
         <div className="nfw-topbar__right">
-          {status && <span className="nfw-topbar__status">{status}</span>}
-          <button
-            className="nfw-topbar__btn"
-            onClick={() => { setDraft(EMPTY_DRAFT); setStatus('새 글 시작'); }}
-          >새 글</button>
-          <button
-            className="nfw-topbar__btn"
-            onClick={() => saveToWP(false)}
-          >임시저장</button>
+          {statusMsg && <span className="nfw-topbar__status">{statusMsg}</span>}
+          <button className="nfw-topbar__btn" onClick={newDraft}>새 글</button>
+          <button className="nfw-topbar__btn" onClick={saveDraft}>임시저장</button>
           <button
             className="nfw-topbar__btn nfw-topbar__btn--primary"
-            onClick={() => { setTab('publish'); saveToWP(true); }}
+            onClick={() => { setTab('publish'); publishToWP(); }}
           >게시</button>
-          <a
-            href="https://www.nutrifarmer.kr/wp-admin/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="nfw-topbar__btn"
-          >WP 관리자</a>
+          <a href="https://www.nutrifarmer.kr/wp-admin/" target="_blank" rel="noopener noreferrer"
+            className="nfw-topbar__btn">WP 관리자</a>
         </div>
       </header>
 
-      {/* ── 메인 레이아웃: 좌(채팅) | 스플리터 | 우(초안) ── */}
+      {/* 메인 레이아웃 */}
       <div className="nfw-layout">
-        {/* 좌 — AI 채팅 + 탭 */}
         <div className="nfw-chat-col" style={{ flexBasis: `${splitPct}%`, maxWidth: `${splitPct}%` }}>
           <ChatPanel
             draft={draft}
             setDraft={setDraft}
             categories={categories}
             onInsertImage={insertImage}
-            onLoadPost={loadPost}
-            wpApiUrl={WP}
+            wpApiUrl={WP_API}
           />
         </div>
 
-        {/* 스플리터 핸들 */}
-        <div
-          ref={splitRef}
-          className="nfw-splitter"
-          onMouseDown={onSplitMouseDown}
-          title="좌우 드래그로 너비 조절"
-        />
+        <div ref={splitRef} className="nfw-splitter" onMouseDown={onSplitDown} />
 
-        {/* 우 — 스마트 초안 */}
         <div className="nfw-draft-col" style={{ flexBasis: `${100 - splitPct}%`, maxWidth: `${100 - splitPct}%` }}>
           <DraftPanel
             draft={draft}
@@ -206,8 +211,10 @@ export function WriteEditor() {
             tab={tab}
             setTab={setTab}
             categories={categories}
-            onSave={saveToWP}
-            wpApiUrl={WP}
+            onSave={saveDraft}
+            onPublish={publishToWP}
+            onBackToCorrect={goBackToCorrect}
+            wpApiUrl={WP_API}
           />
         </div>
       </div>
@@ -215,15 +222,10 @@ export function WriteEditor() {
   );
 }
 
-/** 이미지 포지션을 반영해서 최종 본문 HTML 생성 */
 function buildContent(draft: DraftState): string {
-  const topImgs = draft.images
-    .filter(i => i.position === 'top')
-    .map(i => `<figure><img src="${i.url}" alt="${i.alt}" /></figure>`)
-    .join('\n');
-  const botImgs = draft.images
-    .filter(i => i.position === 'bottom')
-    .map(i => `<figure><img src="${i.url}" alt="${i.alt}" /></figure>`)
-    .join('\n');
-  return [topImgs, draft.body, botImgs].filter(Boolean).join('\n\n');
+  const top = draft.images.filter(i => i.position === 'top')
+    .map(i => `<figure><img src="${i.url}" alt="${i.alt}" /></figure>`).join('\n');
+  const bot = draft.images.filter(i => i.position === 'bottom')
+    .map(i => `<figure><img src="${i.url}" alt="${i.alt}" /></figure>`).join('\n');
+  return [top, draft.body.replace(/\n/g, '<br>'), bot].filter(Boolean).join('\n\n');
 }
