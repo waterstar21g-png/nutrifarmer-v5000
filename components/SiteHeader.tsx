@@ -10,7 +10,9 @@ export function SiteHeader({ categories, activeSlug }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState('');
   const router = useRouter();
-  const mainCats = categories.filter(c => c.count > 0 && c.parent === 0);
+  const mainCats = categories.filter(
+    c => c.count > 0 && c.parent === 0 && c.slug !== 'uncategorized'
+  );
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();

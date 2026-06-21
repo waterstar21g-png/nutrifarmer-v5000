@@ -14,11 +14,12 @@ interface GalleryItem {
 interface Props {
   items: GalleryItem[];
   className?: string;
+  fourCol?: boolean;
 }
 
-export function GalleryGrid({ items, className }: Props) {
+export function GalleryGrid({ items, className, fourCol }: Props) {
   return (
-    <div className={`nf-gallery-grid ${className ?? ''}`}>
+    <div className={`nf-gallery-grid${fourCol ? ' nf-gallery-grid--4col' : ''} ${className ?? ''}`}>
       {items.map(({ post, categorySlug, categoryName, imageUrl }) => {
         const date = new Date(post.date).toLocaleDateString('ko-KR', {
           year: 'numeric', month: 'long', day: 'numeric',

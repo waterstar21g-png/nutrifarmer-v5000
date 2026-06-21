@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getPosts, getFeaturedImageUrl } from '@/lib/wordpress';
 import { GalleryGrid } from '@/components/GalleryGrid';
 import { HeroSlider } from '@/components/HeroSlider';
+import { StatsSection } from '@/components/StatsSection';
 
 export const metadata: Metadata = {
   title: '탁월한 찬사 — 개인 홈페이지형 블로그',
@@ -34,12 +35,6 @@ const FAMILY_ITEMS = [
   { slug: 'family-special',   name: '특별한 날',     desc: '특별한 날의 기록',     icon: '🎉' },
 ];
 
-const STATS = [
-  { num: '8+', label: '콘텐츠 카테고리' },
-  { num: '365', label: '일상 기록 가능일' },
-  { num: '∞', label: '가족·삶의 추억' },
-  { num: '4', label: '일상·가족·성장·나눔' },
-];
 
 export default async function HomePage() {
   const { posts } = await getPosts({ perPage: 9, embed: true }).catch(
@@ -61,17 +56,8 @@ export default async function HomePage() {
       {/* ① Hero 슬라이더 (3개) */}
       <HeroSlider />
 
-      {/* ② 통계 카운터 */}
-      <div className="nf-stats">
-        <div className="nf-stats__inner">
-          {STATS.map(s => (
-            <div key={s.label} className="nf-stat">
-              <div className="nf-stat__num">{s.num}</div>
-              <div className="nf-stat__label">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* ② 통계 카운터 (클릭시 8카드 표출) */}
+      <StatsSection />
 
       {/* ③ 이미지형 카테고리 그리드 (shadcn/ui 카드 + hover zoom) */}
       <section className="nf-showcase">
