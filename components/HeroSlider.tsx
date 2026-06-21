@@ -32,76 +32,113 @@ const SLIDES = [
 ];
 
 const DRAG_THRESHOLD = 50;
-const AUTO_INTERVAL = 5200;
+const AUTO_INTERVAL  = 5200;
 
 export function HeroSlider() {
-  const [cur, setCur] = useState(0);
-  const dragStartX = useRef<number | null>(null);
+  const [cur,       setCur]       = useState(0);
+  const [dragDelta, setDragDelta] = useState(0);   // px, 드래그 중 오프셋
+  const [isDragging, setDragging] = useState(false);
+  const startX = useRef<number | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
-  const goNext = useCallback(() => setCur(c => (c + 1) % SLIDES.length), []);
-  const goPrev = useCallback(() => setCur(c => (c - 1 + SLIDES.length) % SLIDES.length), []);
+  const goTo = useCallback((i: number) => {
+    setCur(((i % SLIDES.length) + SLIDES.length) % SLIDES.length);
+  }, []);
+  const goNext = useCallback(() => goTo(cur + 1), [cur, goTo]);
+  const goPrev = useCallback(() => goTo(cur - 1), [cur, goTo]);
 
+  /* 자동 슬라이드 — 드래그 중 정지 */
   useEffect(() => {
+    if (isDragging) return;
     const id = setInterval(goNext, AUTO_INTERVAL);
     return () => clearInterval(id);
-  }, [goNext]);
+  }, [isDragging, goNext]);
 
-  /* ── 드래그/스와이프 핸들러 ── */
-  const onDragStart = (x: number) => { dragStartX.current = x; };
-  const onDragEnd   = (x: number) => {
-    if (dragStartX.current === null) return;
-    const diff = x - dragStartX.current;
-    if (diff < -DRAG_THRESHOLD) goNext();
-    else if (diff > DRAG_THRESHOLD) goPrev();
-    dragStartX.current = null;
+  /* ── 드래그 핸들러 ── */
+  const onStart = (x: number) => {
+    startX.current = x;
+    setDragging(true);
+    setDragDelta(0);
   };
+
+  const onMove = (x: number) => {
+    if (startX.current === null) return;
+    setDragDelta(x - startX.current);
+  };
+
+  const onEnd = (x: number) => {
+    if (startX.current === null) return;
+    const diff = x - startX.current;
+    if      (diff < -DRAG_THRESHOLD) goNext();
+    else if (diff >  DRAG_THRESHOLD) goPrev();
+    startX.current = null;
+    setDragging(false);
+    setDragDelta(0);
+  };
+
+  /* 트랙 translateX: 현재 슬라이드 * -100% + 드래그 오프셋(%) */
+  const trackWidth = trackRef.current?.offsetWidth ?? 0;
+  const dragPct    = trackWidth > 0 ? (dragDelta / trackWidth) * 100 : 0;
+  const translateX = -(cur * 100) + dragPct;
 
   return (
     <div
       className="nf-hero-slider"
-      style={{ cursor: 'grab', userSelect: 'none' }}
+      style={{ cursor: isDragging ? 'grabbing' : 'grab', userSelect: 'none' }}
       /* Mouse */
-      onMouseDown={e => onDragStart(e.clientX)}
-      onMouseUp={e => onDragEnd(e.clientX)}
-      onMouseLeave={() => { dragStartX.current = null; }}
+      onMouseDown  ={e => onStart(e.clientX)}
+      onMouseMove  ={e => isDragging && onMove(e.clientX)}
+      onMouseUp    ={e => onEnd(e.clientX)}
+      onMouseLeave ={() => { if (isDragging) { setDragging(false); setDragDelta(0); startX.current = null; } }}
       /* Touch */
-      onTouchStart={e => onDragStart(e.touches[0].clientX)}
-      onTouchEnd={e => onDragEnd(e.changedTouches[0].clientX)}
+      onTouchStart ={e => onStart(e.touches[0].clientX)}
+      onTouchMove  ={e => onMove(e.touches[0].clientX)}
+      onTouchEnd   ={e => onEnd(e.changedTouches[0].clientX)}
     >
-      {SLIDES.map((s, i) => (
-        <div key={i} className={`nf-hero-slide${i === cur ? ' is-active' : ''}`}>
-          <div className="nf-hero" style={{ background: s.bg }}>
-            <div className="nf-hero__inner">
-              <h1 className="nf-hero__title" style={{ whiteSpace: 'pre-line' }}>
-                {s.title}
-              </h1>
-              <p className="nf-hero__desc" style={{ whiteSpace: 'pre-line' }}>
-                {s.desc}
-              </p>
-              <div className="nf-hero__btns">
-                {s.btns.map(btn => (
-                  <Link
-                    key={btn.href}
-                    href={btn.href}
-                    className={`nf-hero__btn nf-hero__btn--${btn.v}`}
-                    onMouseDown={e => e.stopPropagation()}
-                  >
-                    {btn.label}
-                  </Link>
-                ))}
+      {/* 슬라이드 트랙 — 좌우로 슬라이딩 */}
+      <div
+        ref={trackRef}
+        className="nf-hero-track"
+        style={{
+          transform:  `translateX(${translateX}%)`,
+          transition: isDragging ? 'none' : 'transform 0.42s cubic-bezier(0.25,0.46,0.45,0.94)',
+        }}
+      >
+        {SLIDES.map((s, i) => (
+          <div key={i} className="nf-hero-slide">
+            <div className="nf-hero" style={{ background: s.bg }}>
+              <div className="nf-hero__inner">
+                <h1 className="nf-hero__title" style={{ whiteSpace: 'pre-line' }}>
+                  {s.title}
+                </h1>
+                <p className="nf-hero__desc" style={{ whiteSpace: 'pre-line' }}>
+                  {s.desc}
+                </p>
+                <div className="nf-hero__btns">
+                  {s.btns.map(btn => (
+                    <Link
+                      key={btn.href}
+                      href={btn.href}
+                      className={`nf-hero__btn nf-hero__btn--${btn.v}`}
+                      onMouseDown={e => e.stopPropagation()}
+                    >
+                      {btn.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
-      {/* 점 (화살표 제거) */}
+      {/* 하단 점 내비게이션 */}
       <div className="nf-hero-dots">
         {SLIDES.map((_, i) => (
           <button
             key={i}
             className={`nf-hero-dot${i === cur ? ' is-active' : ''}`}
-            onClick={() => setCur(i)}
+            onClick={() => goTo(i)}
             onMouseDown={e => e.stopPropagation()}
             aria-label={`슬라이드 ${i + 1}`}
           />
