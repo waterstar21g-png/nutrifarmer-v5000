@@ -1,0 +1,62 @@
+---
+description: V5000 프로젝트 컨텍스트 — 매 채팅마다 자동 로드
+globs:
+alwaysApply: true
+---
+
+# nutrifarmer-v5000 프로젝트 컨텍스트
+
+## 기본 정보
+- **프로젝트명**: 탁월한 찬사 — 개인 홈페이지형 블로그 V5000
+- **로컬 경로**: `D:/함께온라인/My_BLOG/nutrifarmer-v5000`
+- **GitHub**: https://github.com/waterstar21g-png/nutrifarmer-v5000
+- **배포 URL**: https://nutrifarmer-v5000.vercel.app
+- **원본 참조**: https://www.nutrifarmer.kr/
+- **기술 스택**: Next.js 15 + TypeScript + Tailwind CSS + Vercel
+
+## 배포 명령
+```powershell
+cd "D:/함께온라인/My_BLOG/nutrifarmer-v5000"
+vercel --prod --yes
+```
+
+## 현재 상태 (2026-06-21 기준)
+- SiteHeader nav 8개 카테고리 수정 완료 → **배포 유보 중**
+- CHANGELOG: `docs/CHANGELOG.md` 참조
+
+## 핵심 설계 원칙
+- **단일 진실의 원천**: 카테고리/섹션 데이터는 `lib/site-data.ts` 한 곳에서 관리
+- **전체화면 레이아웃**: `--nf-px: clamp(1.25rem, 3.5vw, 3rem)` 패딩 변수 사용
+- **max-width 사용 금지**: 섹션 inner 컨테이너는 `width: 100%` + `padding: var(--nf-px)` 방식
+- **CSS 변수 체계**: `--nf-primary(#0f2744)`, `--nf-accent(#c05621)`, `--nf-blue(#1a5fa8)` 등
+
+## 네비게이션 고정 8개 카테고리
+```
+일상 기록 (daily-life) / 가족·성장 (family-growth) / 개인 자료 (personal-archive)
+프로그램 (archive-dev) / 삶·사진 (life-photos) / 수익관리 (revenue)
+전문 글쓰기 (pro-writing) / 주변 이야기 (fresh-news)
+```
+- **중요**: WordPress API 카테고리 무시, site-data.ts SHOWCASE_CATS 고정 사용
+
+## 주요 파일 위치
+| 파일 | 역할 |
+|------|------|
+| `app/globals.css` | 전역 CSS (--nf-* 변수 체계) |
+| `lib/site-data.ts` | 카테고리/섹션 고정 데이터 |
+| `lib/wordpress.ts` | WP REST API 함수 |
+| `components/SiteHeader.tsx` | 상단 네비게이션 |
+| `components/HeroSlider.tsx` | 드래그 슬라이더 |
+| `components/StatsSection.tsx` | 통계 카운터 |
+| `components/write/WriteEditor.tsx` | AI 글쓰기 에디터 |
+| `app/write/write.css` | 에디터 전용 스타일 |
+
+## WordPress 연동 범위
+- **필수**: 글·이미지 데이터 소스 (REST API)
+- **선택**: 게시/수정 (로그인 필요, 실패 시 localStorage 폴백)
+- **AI**: WP API 실패 시 로컬 시뮬레이션 자동 전환
+
+## 코딩 규칙
+- 컴포넌트 파일: 50~200줄 유지, 기능별 분리
+- CSS 클래스: `nf-` 접두사 (사이트 전역), `nfw-` 접두사 (write 에디터)
+- 이미지: Next.js `<Image>` 컴포넌트 사용, `next.config.ts` 도메인 허용 목록 확인
+- 배포 전: `npm run build` 빌드 검증 필수
