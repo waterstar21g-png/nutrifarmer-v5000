@@ -1242,32 +1242,32 @@ body {
 }
 .nf-showcase__grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
 }
 .nf-showcase__card {
   background: #fff;
   border: 1px solid var(--nf-border);
-  border-radius: 14px;
-  padding: 1.4rem 0.75rem 1.2rem;
+  border-radius: 16px;
+  padding: 2rem 1.5rem 1.75rem;
   text-align: center;
   text-decoration: none;
   color: var(--nf-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.55rem;
   transition: transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94),
               box-shadow 0.25s cubic-bezier(0.25,0.46,0.45,0.94),
               border-color 0.15s;
 }
 .nf-showcase__card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 32px rgba(15,39,68,0.13);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 42px rgba(15,39,68,0.14);
   border-color: var(--nf-blue-mid);
 }
 .nf-showcase__icon {
-  font-size: 2.2rem;
+  font-size: 3rem;
   line-height: 1;
   display: block;
   transition: transform 0.38s cubic-bezier(0.25,0.46,0.45,0.94);
@@ -1276,15 +1276,15 @@ body {
   transform: scale(1.2) rotate(-4deg);
 }
 .nf-showcase__name {
-  font-size: 0.88rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--nf-primary);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 .nf-showcase__desc {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: var(--nf-muted);
-  line-height: 1.4;
+  line-height: 1.5;
   font-weight: 400;
 }
 
@@ -1374,16 +1374,14 @@ body {
    반응형 (전체화면 기준으로 재정비)
 ══════════════════════════════════════════════ */
 
-/* 1280px 이하: showcase 4컬럼, gallery 3컬럼 */
+/* 1280px 이하: gallery 3컬럼 (showcase는 항상 4컬럼 유지) */
 @media (max-width: 1280px) {
-  .nf-showcase__grid { grid-template-columns: repeat(4, 1fr); }
-  .nf-gallery-grid   { grid-template-columns: repeat(3, 1fr); }
+  .nf-gallery-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
-/* 1024px 이하: 2컬럼 전환 */
+/* 1024px 이하 */
 @media (max-width: 1024px) {
-  .nf-gallery-grid  { grid-template-columns: repeat(2, 1fr); }
-  .nf-showcase__grid { grid-template-columns: repeat(4, 1fr); }
+  .nf-gallery-grid   { grid-template-columns: repeat(2, 1fr); }
   .nf-feature__grid  { grid-template-columns: repeat(2, 1fr); }
   .nf-footer__inner  { grid-template-columns: repeat(3, 1fr); }
   .nf-single-layout  { grid-template-columns: 1fr 260px; }
@@ -1399,7 +1397,7 @@ body {
   .nf-nav-bar__search-input { width: 90px; }
   .nf-nav-bar__brand-sub { display: none; }
   .nf-gallery-grid   { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-  .nf-showcase__grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .nf-showcase__grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }  /* 모바일: 2×4 */
   .nf-hero-arrows    { display: none; }
   .nf-stats__inner   { grid-template-columns: repeat(2, 1fr); }
   .nf-single-layout  { grid-template-columns: 1fr; }
