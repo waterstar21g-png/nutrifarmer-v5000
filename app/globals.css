@@ -1,7 +1,7 @@
-@import "tailwindcss";
-
-/* ── Pretendard 폰트 ── */
+/* ── Pretendard 폰트 (반드시 @layer 전에) ── */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+@import "tailwindcss";
 
 /* ── shadcn/ui CSS 변수 ── */
 :root {
@@ -583,7 +583,7 @@ body {
   margin: 0 auto;
   padding: 3rem 1.25rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
   gap: 2rem;
 }
 .nf-footer__brand-name { font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
@@ -594,11 +594,289 @@ body {
 .nf-footer__links a:hover { color: #fff; }
 .nf-footer__bottom { border-top: 1px solid rgba(255,255,255,0.1); text-align: center; padding: 1.1rem; font-size: 0.73rem; color: rgba(255,255,255,0.38); font-weight: 400; }
 
-/* ── 반응형 ── */
+/* ══════════════════════════════════════════════
+   Hero Slider (3-slide carousel)
+══════════════════════════════════════════════ */
+.nf-hero-slider {
+  position: relative;
+  overflow: hidden;
+}
+.nf-hero-slide { display: none; }
+.nf-hero-slide.is-active {
+  display: block;
+  animation: nfSlideIn 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+@keyframes nfSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.nf-hero--warm {
+  background: linear-gradient(135deg, #5c3317 0%, #9c6b3c 100%) !important;
+}
+.nf-hero--revenue {
+  background: linear-gradient(135deg, #0f3d2e 0%, #1a7d54 100%) !important;
+}
+.nf-hero-dots {
+  position: absolute;
+  bottom: 1.1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.42rem;
+  z-index: 10;
+}
+.nf-hero-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.38);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
+}
+.nf-hero-dot.is-active {
+  background: #fff;
+  transform: scale(1.3);
+}
+.nf-hero-arrows {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1rem;
+}
+.nf-hero-arrow {
+  pointer-events: all;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background 0.15s;
+  backdrop-filter: blur(4px);
+}
+.nf-hero-arrow:hover { background: rgba(255,255,255,0.35); }
+
+/* ══════════════════════════════════════════════
+   Stats Section
+══════════════════════════════════════════════ */
+.nf-stats {
+  background: #fff;
+  border-bottom: 1px solid var(--nf-border);
+  padding: 2.75rem 1.25rem;
+}
+.nf-stats__inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  text-align: center;
+}
+.nf-stat {
+  padding: 1.6rem 1rem 1.4rem;
+  border-radius: 14px;
+  background: var(--nf-bg);
+  border: 1px solid var(--nf-border);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.nf-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(15,39,68,0.1);
+}
+.nf-stat__num {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--nf-primary);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.nf-stat__label {
+  font-size: 0.8rem;
+  color: var(--nf-muted);
+  margin-top: 0.5rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ══════════════════════════════════════════════
+   Category Showcase Grid (8가지 카테고리)
+══════════════════════════════════════════════ */
+.nf-showcase {
+  background: var(--nf-bg);
+  padding: 3.5rem 1.25rem;
+  border-bottom: 1px solid var(--nf-border);
+}
+.nf-showcase__inner { max-width: 1100px; margin: 0 auto; }
+.nf-showcase__head {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.nf-showcase__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--nf-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.nf-showcase__title {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 800;
+  color: var(--nf-primary);
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+.nf-showcase__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+.nf-showcase__card {
+  background: #fff;
+  border: 1px solid var(--nf-border);
+  border-radius: 16px;
+  padding: 2rem 1.25rem 1.6rem;
+  text-align: center;
+  text-decoration: none;
+  color: var(--nf-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  transition: transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94),
+              box-shadow 0.25s cubic-bezier(0.25,0.46,0.45,0.94),
+              border-color 0.15s;
+}
+.nf-showcase__card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 42px rgba(15,39,68,0.14);
+  border-color: var(--nf-blue-mid);
+}
+.nf-showcase__icon {
+  font-size: 2.8rem;
+  line-height: 1;
+  display: block;
+  transition: transform 0.38s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.nf-showcase__card:hover .nf-showcase__icon {
+  transform: scale(1.2) rotate(-4deg);
+}
+.nf-showcase__name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--nf-primary);
+  letter-spacing: -0.015em;
+}
+.nf-showcase__desc {
+  font-size: 0.78rem;
+  color: var(--nf-muted);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* ══════════════════════════════════════════════
+   Feature Section (나를 소개합니다 / 가족 앨범)
+══════════════════════════════════════════════ */
+.nf-feature {
+  background: var(--nf-bg);
+  padding: 3.5rem 1.25rem;
+  border-bottom: 1px solid var(--nf-border);
+}
+.nf-feature--alt { background: #fff; }
+.nf-feature__inner { max-width: 1100px; margin: 0 auto; }
+.nf-feature__head { margin-bottom: 1.75rem; }
+.nf-feature__section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--nf-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+.nf-feature__title {
+  font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+  font-weight: 800;
+  color: var(--nf-primary);
+  margin: 0 0 0.4rem;
+  letter-spacing: -0.025em;
+}
+.nf-feature__desc {
+  font-size: 0.9rem;
+  color: var(--nf-muted);
+  font-weight: 400;
+  line-height: 1.7;
+  margin: 0;
+}
+.nf-feature__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+.nf-feature__card {
+  background: #fff;
+  border: 1px solid var(--nf-border);
+  border-radius: 14px;
+  padding: 1.85rem 1.25rem 1.5rem;
+  text-align: center;
+  text-decoration: none;
+  color: var(--nf-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.22s, box-shadow 0.22s, border-color 0.15s;
+}
+.nf-feature--alt .nf-feature__card {
+  background: var(--nf-bg);
+}
+.nf-feature__card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(15,39,68,0.13);
+  border-color: var(--nf-blue-mid);
+}
+.nf-feature__card-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  transition: transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.nf-feature__card:hover .nf-feature__card-icon {
+  transform: scale(1.15);
+}
+.nf-feature__card-title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--nf-primary);
+  letter-spacing: -0.01em;
+}
+.nf-feature__card-desc {
+  font-size: 0.76rem;
+  color: var(--nf-muted);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* ══════════════════════════════════════════════
+   반응형
+══════════════════════════════════════════════ */
 @media (max-width: 1024px) {
   .nf-gallery-grid { grid-template-columns: repeat(2, 1fr); }
   .nf-archive-banner, .nf-archive-shell { max-width: 100%; }
   .nf-archive-banner { border-radius: 0; margin: 0.5rem 0; }
+  .nf-stats__inner { grid-template-columns: repeat(2, 1fr); }
+  .nf-showcase__grid { grid-template-columns: repeat(2, 1fr); }
+  .nf-feature__grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 767px) {
   .nf-top-bar__links { display: none; }
@@ -608,11 +886,22 @@ body {
   .nf-nav-bar__search-input { width: 90px; }
   .nf-nav-bar__brand-sub { display: none; }
   .nf-gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .nf-hero-arrows { display: none; }
 }
 @media (max-width: 480px) {
   .nf-top-bar { display: none; }
   .nf-nav-bar { top: 0; }
-  .nf-hero { padding: 2.5rem 1rem; }
+  .nf-hero { padding: 2.75rem 1rem 3.5rem; }
   .nf-gallery-grid { grid-template-columns: 1fr; }
   .nf-home-shell { padding: 0 0.75rem 2rem; }
+  .nf-stats__inner { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .nf-showcase__grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .nf-feature__grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+}
+
+@media (max-width: 1100px) {
+  .nf-footer__inner { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  .nf-footer__inner { grid-template-columns: repeat(2, 1fr); }
 }
