@@ -5,22 +5,10 @@ import {
   getPosts, getCategoryBySlug, getCategories,
   getFeaturedImageUrl,
 } from '@/lib/wordpress';
+import { ABOUT_ITEMS, FAMILY_ITEMS } from '@/lib/site-data';
 import { GalleryGrid } from '@/components/GalleryGrid';
 
 const PER_PAGE = 8;
-
-const ABOUT_ITEMS = [
-  { slug: 'about-memoir',     name: '추억하며',      desc: '삶의 추억과 회고',         icon: '🕯️' },
-  { slug: 'about-program',    name: '프로그램 기록', desc: '개발 기록과 성장 노트',    icon: '💡' },
-  { slug: 'personal-archive', name: '개인 자료',     desc: '개인 자료 보관함',         icon: '📁' },
-  { slug: 'revenue',          name: '수익 관리',     desc: '수익 기록·분석',           icon: '📊' },
-];
-const FAMILY_ITEMS = [
-  { slug: 'family-grandson',  name: '손자 성장일기', desc: '손자들의 성장 기록',       icon: '👶' },
-  { slug: 'family-children',  name: '자녀 이야기',   desc: '자녀들의 따뜻한 이야기',  icon: '👨‍👧' },
-  { slug: 'family-photos',    name: '가족 사진',     desc: '소중한 가족의 순간',       icon: '📸' },
-  { slug: 'family-special',   name: '특별한 날',     desc: '특별한 날의 기록',         icon: '🎉' },
-];
 
 interface Props {
   params: Promise<{ category: string }>;

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -27,8 +27,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostPage({ params }: Props) {
   const { slug, category } = await params;
-  const post = await getPostBySlug(slug);
-  if (!post) notFound();
+  const post = await getPostBySlug(slug).catch(() => null);
+  if (!post) redirect(`/${category}`);
 
   const imgUrl = getFeaturedImageUrl(post);
   const cats = getPostCategories(post);

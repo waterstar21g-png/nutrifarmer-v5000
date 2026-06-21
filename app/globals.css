@@ -413,10 +413,10 @@ body {
   margin: 0 auto;
 }
 .nf-hero__title {
-  font-size: clamp(1.9rem, 4vw, 2.9rem);
+  font-size: clamp(1.35rem, 2.8vw, 2rem);
   font-weight: 900;
   margin: 0 0 0.85rem;
-  line-height: 1.2;
+  line-height: 1.25;
   letter-spacing: -0.03em;
 }
 .nf-hero__desc {
@@ -678,12 +678,6 @@ body {
   border: 1px solid var(--nf-border);
   overflow: hidden;
 }
-.nf-sidebar__search {
-  padding: 0.65rem 0.75rem;
-  border-bottom: 1px solid var(--nf-border);
-  display: flex;
-  gap: 0.35rem;
-}
 .nf-sidebar__search-input {
   flex: 1;
   border: 1px solid var(--nf-border);
@@ -709,15 +703,22 @@ body {
 }
 .nf-sidebar__search-btn:hover { background: var(--nf-blue); }
 .nf-sidebar__cat-badge {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.6rem 0.75rem;
   background: var(--nf-accent);
   color: #fff;
   font-weight: 900;
-  padding: 0.65rem 1rem;
-  font-size: 0.92rem;
+  padding: 0.45rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.88rem;
   text-align: center;
+  text-decoration: none;
   letter-spacing: -0.01em;
+  transition: background 0.15s;
 }
+.nf-sidebar__cat-badge:hover { background: #a04918; }
 .nf-sidebar__list {
   max-height: 440px;
   overflow-y: auto;
@@ -729,12 +730,12 @@ body {
 }
 .nf-sidebar__list-item a {
   display: block;
-  padding: 0.62rem 1rem;
+  padding: 0.32rem 0.85rem;
   border-bottom: 1px solid var(--nf-border);
   color: var(--nf-primary);
   text-decoration: none;
-  font-size: 0.82rem;
-  line-height: 1.45;
+  font-size: 0.76rem;
+  line-height: 1.4;
   font-weight: 500;
   transition: background 0.1s, color 0.1s;
 }
@@ -744,6 +745,16 @@ body {
   font-weight: 700;
   background: #fff5f0;
   border-left: 3px solid var(--nf-accent);
+}
+
+/* 사이드바 검색 잘림 방지 */
+.nf-sidebar__search {
+  padding: 0.6rem 0.65rem;
+  border-bottom: 1px solid var(--nf-border);
+  display: flex;
+  gap: 0.3rem;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /* ══════════════════════════════════════════════
@@ -913,42 +924,94 @@ body {
    Stats Section
 ══════════════════════════════════════════════ */
 .nf-stats {
-  background: #fff;
+  background: #ffffff;
+  border-top: 3px solid #fff;
   border-bottom: 1px solid var(--nf-border);
-  padding: 2.75rem 1.25rem;
+  padding: 2rem 1.25rem;
+  position: relative;
+  z-index: 2;
 }
 .nf-stats__inner {
-  max-width: 960px;
+  max-width: 860px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
+  gap: 1rem;
   text-align: center;
 }
 .nf-stat {
-  padding: 1.6rem 1rem 1.4rem;
-  border-radius: 14px;
+  padding: 1.2rem 0.75rem 1rem;
+  border-radius: 12px;
   background: var(--nf-bg);
   border: 1px solid var(--nf-border);
   transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  position: relative;
+  outline: none;
 }
 .nf-stat:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(15,39,68,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(15,39,68,0.09);
 }
 .nf-stat__num {
-  font-size: 2.4rem;
+  font-size: 1.75rem;
   font-weight: 900;
   color: var(--nf-primary);
   line-height: 1;
   letter-spacing: -0.04em;
 }
 .nf-stat__label {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: var(--nf-muted);
-  margin-top: 0.5rem;
-  font-weight: 500;
+  margin-top: 0.4rem;
+  font-weight: 600;
   line-height: 1.4;
+}
+
+/* Stats 활성 상태 */
+.nf-stat::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 60%;
+  height: 3px;
+  background: var(--nf-accent);
+  border-radius: 2px;
+  transition: transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.nf-stat.is-active {
+  border-color: var(--nf-accent);
+  background: #fff5f0;
+}
+.nf-stat.is-active::after { transform: translateX(-50%) scaleX(1); }
+.nf-stat.is-active .nf-stat__num { color: var(--nf-accent); }
+
+/* 통계 선택시 확장 영역 */
+.nf-stats-expanded {
+  max-width: 860px;
+  margin: 1.5rem auto 0;
+  animation: nfSlideIn 0.35s ease;
+}
+
+/* 선택된 통계 상단 굵은 테두리 강조 */
+.nf-stats-selected-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.nf-stat--hero {
+  border: 3px solid var(--nf-accent) !important;
+  background: #fff5f0 !important;
+  min-width: 160px;
+  box-shadow: 0 4px 16px rgba(192,86,33,0.18);
+}
+.nf-stat--hero .nf-stat__num { color: var(--nf-accent) !important; font-size: 2rem; }
+
+/* Stats 아래 동적 카드 영역 */
+.nf-stats-cards {
+  padding: 0;
 }
 
 /* ══════════════════════════════════════════════

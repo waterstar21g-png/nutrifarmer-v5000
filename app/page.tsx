@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getPosts, getFeaturedImageUrl } from '@/lib/wordpress';
+import { SHOWCASE_CATS, ABOUT_ITEMS, FAMILY_ITEMS } from '@/lib/site-data';
 import { GalleryGrid } from '@/components/GalleryGrid';
 import { HeroSlider } from '@/components/HeroSlider';
 import { StatsSection } from '@/components/StatsSection';
@@ -9,31 +10,6 @@ export const metadata: Metadata = {
   title: '탁월한 찬사 — 개인 홈페이지형 블로그',
   description: '일상, 가족, 자료, 프로그램, 수익 — 삶의 기록을 한곳에 모은 개인 홈페이지형 블로그',
 };
-
-const SHOWCASE_CATS = [
-  { slug: 'daily-life',       name: '일상 기록',   desc: '매일의 소소한 이야기',          icon: '📔' },
-  { slug: 'family-growth',    name: '가족·성장',   desc: '자녀·손자 성장 기록',            icon: '🏡' },
-  { slug: 'personal-archive', name: '개인 자료',   desc: '개인 자료 보관함',               icon: '📁' },
-  { slug: 'archive-dev',      name: '프로그램',    desc: '프로그램 구축 자료',             icon: '💻' },
-  { slug: 'life-photos',      name: '삶·사진',     desc: '삶의 기록과 사진',              icon: '📷' },
-  { slug: 'revenue',          name: '수익관리',    desc: '수익 기록·분석',                 icon: '💰' },
-  { slug: 'pro-writing',      name: '전문 글쓰기', desc: '전문적인 글과 칼럼',             icon: '✍️' },
-  { slug: 'fresh-news',       name: '주변 이야기', desc: '주변 사람들의 신선한 이야기',    icon: '📰' },
-];
-
-const ABOUT_ITEMS = [
-  { slug: 'about-memoir',     name: '추억하며',     desc: '삶의 추억과 회고',        icon: '🕯️' },
-  { slug: 'about-program',    name: '프로그램 기록', desc: '개발 기록과 성장 노트',   icon: '💡' },
-  { slug: 'personal-archive', name: '개인 자료',    desc: '개인 자료 보관함',        icon: '📁' },
-  { slug: 'revenue',          name: '수익 관리',    desc: '수익 기록·분석',          icon: '📊' },
-];
-
-const FAMILY_ITEMS = [
-  { slug: 'family-grandson',  name: '손자 성장일기', desc: '손자들의 성장 기록',   icon: '👶' },
-  { slug: 'family-children',  name: '자녀 이야기',   desc: '자녀들의 따뜻한 이야기', icon: '👨‍👧' },
-  { slug: 'family-photos',    name: '가족 사진',     desc: '소중한 가족의 순간',   icon: '📸' },
-  { slug: 'family-special',   name: '특별한 날',     desc: '특별한 날의 기록',     icon: '🎉' },
-];
 
 
 export default async function HomePage() {
