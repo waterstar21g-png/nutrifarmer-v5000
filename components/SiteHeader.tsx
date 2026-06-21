@@ -3,16 +3,25 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { WPCategory } from '@/lib/wordpress';
+import { SHOWCASE_CATS } from '@/lib/site-data';
+
+/* 네비게이션 고정 8개 카테고리 (WordPress 실제 여부와 무관하게 항상 이 순서로 표시) */
+const NAV_CATS = SHOWCASE_CATS.map(c => ({
+  id:    c.slug,
+  name:  c.name,
+  slug:  c.slug,
+  count: 1,
+  parent: 0,
+}));
 
 interface Props { categories: WPCategory[]; activeSlug?: string; }
 
-export function SiteHeader({ categories, activeSlug }: Props) {
+export function SiteHeader({ categories: _wpCats, activeSlug }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState('');
   const router = useRouter();
-  const mainCats = categories.filter(
-    c => c.count > 0 && c.parent === 0 && c.slug !== 'uncategorized'
-  );
+  /* WP 카테고리는 무시하고 site-data 고정 8개 사용 */
+  const mainCats = NAV_CATS;
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
