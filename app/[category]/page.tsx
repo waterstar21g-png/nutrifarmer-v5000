@@ -7,6 +7,7 @@ import {
 } from '@/lib/wordpress';
 import { ABOUT_ITEMS, FAMILY_ITEMS } from '@/lib/site-data';
 import { GalleryGrid } from '@/components/GalleryGrid';
+import { CategorySearch } from '@/components/CategorySearch';
 
 const PER_PAGE = 8;
 
@@ -40,10 +41,18 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const cat = await getCategoryBySlug(category);
   if (!cat || cat.count === 0) notFound();
 
-  const [{ posts, total, totalPages }, { posts: latestPosts }] = await Promise.all([
+  const [{ posts, total, totalPages }, { posts: latestPosts }, { posts: allCatPosts }] = await Promise.all([
     getPosts({ page, perPage: PER_PAGE, categoryId: cat.id, embed: true }),
     getPosts({ perPage: 9, embed: true }),
+    getPosts({ page: 1, perPage: 100, categoryId: cat.id, embed: true }),
   ]);
+
+  const searchItems = allCatPosts.map(post => ({
+    id: post.id,
+    slug: post.slug,
+    title: post.title.rendered.replace(/<[^>]+>/g, ''),
+    imageUrl: getFeaturedImageUrl(post) || null,
+  }));
 
   const galleryItems = posts.map(post => ({
     post,
@@ -80,6 +89,11 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <p className="nf-archive-banner__count">총 {total}개 글</p>
       </div>
 
+      {/* 카테고리 내 검색 → 단일글 이동 */}
+      <div className="nf-archive-shell" style={{ paddingTop: '1.5rem' }}>
+        <CategorySearch posts={searchItems} catSlug={category} catName={cat.name} />
+      </div>
+
       {/* 8카드 그리드 (4×2) */}
       <div className="nf-archive-shell">
         {posts.length === 0 ? (
@@ -90,43 +104,42 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           <GalleryGrid items={galleryItems} fourCol />
         )}
 
-        {/* 이미지형 화살표 페이지 이동 */}
+        {/* 전체 창 좌우 끝 고정 화살표 */}
         {totalPages > 1 && (
-          <div className="nf-cat-nav">
+          <>
+            {/* 왼쪽 끝 — 이전 */}
             {hasPrev ? (
               <Link
                 href={`${basePath}?page=${page - 1}`}
                 className="nf-cat-nav__arrow nf-cat-nav__arrow--prev"
+                aria-label={`이전 페이지 (${page - 1}/${totalPages})`}
               >
                 <span className="nf-cat-nav__circle">‹</span>
-                이전 8개
+                <span className="nf-cat-nav__label">이전</span>
               </Link>
             ) : (
-              <span className="nf-cat-nav__arrow nf-cat-nav__arrow--prev nf-cat-nav__arrow--disabled">
-                <span className="nf-cat-nav__circle">‹</span>
-                이전 8개
-              </span>
+              <span className="nf-cat-nav__arrow nf-cat-nav__arrow--prev nf-cat-nav__arrow--disabled" aria-hidden="true" />
             )}
 
-            <span className="nf-cat-nav__info">
-              {page} / {totalPages} 페이지
-            </span>
+            {/* 하단 중앙 페이지 정보 */}
+            <div className="nf-cat-nav">
+              <span className="nf-cat-nav__info">{page} / {totalPages} 페이지</span>
+            </div>
 
+            {/* 오른쪽 끝 — 다음 */}
             {hasNext ? (
               <Link
                 href={`${basePath}?page=${page + 1}`}
                 className="nf-cat-nav__arrow"
+                aria-label={`다음 페이지 (${page + 1}/${totalPages})`}
               >
-                다음 8개
                 <span className="nf-cat-nav__circle">›</span>
+                <span className="nf-cat-nav__label">다음</span>
               </Link>
             ) : (
-              <span className="nf-cat-nav__arrow nf-cat-nav__arrow--disabled">
-                다음 8개
-                <span className="nf-cat-nav__circle">›</span>
-              </span>
+              <span className="nf-cat-nav__arrow nf-cat-nav__arrow--disabled" aria-hidden="true" />
             )}
-          </div>
+          </>
         )}
       </div>
 
