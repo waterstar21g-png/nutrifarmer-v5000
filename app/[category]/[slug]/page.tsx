@@ -6,6 +6,7 @@ import {
   getPostBySlug, getCategoryBySlug, getPosts,
   getFeaturedImageUrl, getPostCategories,
 } from '@/lib/wordpress';
+import { SidebarSearch } from '@/components/SidebarSearch';
 
 interface Props { params: Promise<{ category: string; slug: string }> }
 
@@ -116,41 +117,14 @@ export default async function PostPage({ params }: Props) {
           )}
         </article>
 
-        {/* 우측 사이드바 */}
+        {/* 우측 사이드바 — 검색 + 역상 하이라이트 */}
         {cat && (
-          <aside className="nf-sidebar">
-            {/* 검색창 */}
-            <div className="nf-sidebar__search">
-              <input
-                type="search"
-                className="nf-sidebar__search-input"
-                placeholder="검색..."
-                readOnly
-                aria-label="검색"
-              />
-              <button className="nf-sidebar__search-btn" aria-label="검색 실행">
-                🔍
-              </button>
-            </div>
-
-            {/* 현재 카테고리 배지 */}
-            <Link href={`/${cat.slug}`} className="nf-sidebar__cat-badge">
-              {cat.name}
-            </Link>
-
-            {/* 같은 카테고리 글 목록 */}
-            <ul className="nf-sidebar__list">
-              {sidePosts.map(p => {
-                const t = p.title.rendered.replace(/<[^>]+>/g, '');
-                const isActive = p.slug === slug;
-                return (
-                  <li key={p.id} className={`nf-sidebar__list-item${isActive ? ' is-active' : ''}`}>
-                    <Link href={`/${cat.slug}/${p.slug}`}>{t}</Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </aside>
+          <SidebarSearch
+            posts={sidePosts}
+            catSlug={cat.slug}
+            catName={cat.name}
+            currentSlug={slug}
+          />
         )}
       </div>
     </>

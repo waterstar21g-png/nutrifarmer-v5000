@@ -747,6 +747,35 @@ body {
   border-left: 3px solid var(--nf-accent);
 }
 
+/* 검색 역상(하이라이트) */
+.nf-sidebar__list-item.is-match a {
+  background: var(--nf-primary);
+  color: #fff !important;
+  font-weight: 700;
+  border-left: 3px solid var(--nf-accent);
+}
+.nf-sidebar__list-item.is-match a:hover {
+  background: var(--nf-blue);
+  color: #fff;
+}
+
+/* 검색 비일치 항목 흐리게 */
+.nf-sidebar__list-item.is-dim a {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* 검색 결과 수 */
+.nf-sidebar__search-info {
+  padding: 0.28rem 0.85rem;
+  font-size: 0.7rem;
+  color: var(--nf-accent);
+  font-weight: 700;
+  border-bottom: 1px solid var(--nf-border);
+  background: #fff5f0;
+  letter-spacing: 0.02em;
+}
+
 /* 사이드바 검색 잘림 방지 */
 .nf-sidebar__search {
   padding: 0.6rem 0.65rem;
