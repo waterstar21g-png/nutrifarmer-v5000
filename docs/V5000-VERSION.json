@@ -1,0 +1,16 @@
+{
+  "scheme": "V5.MAJOR.MINOR.PATCH — V5000 shipped release",
+  "rules": {
+    "MAJOR": "플랫폼 세대 (5 = V5000 Native)",
+    "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
+    "PATCH": "글쓰기·도구·인프라 배치 (누적)"
+  },
+  "version": "5.0.0.1",
+  "label": "V5.0.0.1",
+  "commit": "bc070b5",
+  "commitFull": "bc070b5",
+  "deploymentId": "dpl_GpHbEsqCA9YrnQEnihessaq2HWty",
+  "www": "https://www.nutrifarmer.kr/",
+  "summary": "Write editor all text +60% (×1.6)",
+  "updatedAt": "2026-06-28T02:00:00+09:00"
+}

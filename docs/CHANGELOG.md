@@ -7,7 +7,16 @@
 
 ---
 
-## [v3.0] — 진행 중 · V5000 Native Platform (무 WordPress)
+## V5.X.X.X 릴리스 (2026-06-28~)
+
+| 버전 | git | 배포 ID | 요약 |
+|---|---|---|---|
+| **V5.0.0.0** | `0dff010` | `dpl_6hZXiMyxGp8tpac819PEoJ3vPiu5` | UI spec 1~10 반영 **이전** baseline |
+| **V5.0.0.1** | `bc070b5` | `dpl_GpHbEsqCA9YrnQEnihessaq2HWty` | `/write` 전체 글자 +60% (×1.6) |
+
+> **버전 파일:** `docs/V5000-VERSION.json` · **규칙:** V5 = 플랫폼 · MINOR = 공개 UI 배치 · PATCH = 글쓰기·도구 배치
+
+---
 
 > **Spec:** [`docs/V5000-native-platform-spec.md`](V5000-native-platform-spec.md)  
 > **상태:** Phase C·D 완료 (2026-06-27) · git `d1448c8` · prod tag `prod-canonical-2026-06-27` → `dpl_CANs…`
