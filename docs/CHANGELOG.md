@@ -10,7 +10,7 @@
 ## [v3.0] — 진행 중 · V5000 Native Platform (무 WordPress)
 
 > **Spec:** [`docs/V5000-native-platform-spec.md`](V5000-native-platform-spec.md)  
-> **상태:** Phase C·D 완료 (2026-06-27) · **Git 미커밋**
+> **상태:** Phase C·D 완료 (2026-06-27) · git `d1448c8` · prod tag `prod-canonical-2026-06-27` → `dpl_CANs…`
 
 > 본 CHANGELOG는 **V5000**(`nutrifarmer-v5000`) 전용. V3000/V4000은 마이그레이션·참조 언급 시에만 기록.
 
@@ -102,6 +102,29 @@
 | 폴백 | `@vercel/blob` — R2 미설정 시 |
 | 라우트 | `app/(site)/` route group — 홈·카테고리·단일글 레이아웃 분리 |
 
+#### 2026-06-27 — 배포·버전 관리 정리
+
+| 시각 (KST) | 배포 ID | git | 작업 요약 | 비고 |
+|---|---|---|---|---|
+| 11:37 | `dpl_9e87eM5gU9Pw87s3A9M9BBG1TXH2` | — | Phase C — Postgres 단독 읽기 | WP 런타임 제거 |
+| 12:48 | `dpl_8RymUqKBPMEfRHhRd77fiSiRanme` | — | `waterstar21@naver.com` 최대 4계정 | `0003_shared_email_accounts` |
+| 12:58 | `dpl_ASM7HRb7MuvgkrapN5vvUM3S9x4p` | — | 글쓰기 등급 표시 (샛별/일반/관리자) | |
+| 13:33 | `dpl_4reidaw4qhWfC4aRjdAydgKCcV5h` | — | 글쓰기 9항목 (덧붙이기·등록글·글수정 등) | **사이드바 pill 정상 마지막** |
+| **13:42** | `dpl_AprW9ECz32bpwPQMCMwyxA6HwJz3` | — | 바탕 투명·글씨 검정 공통 CSS | **pill 깨짐** (`cat-badge` plain 덮음) |
+| 14:04 | `dpl_CNL8tWSPesfxGHuxB8uRGixjdUUf` | — | 삽입 위치 레일 (상/커서/하) | |
+| 14:22 | `dpl_FZvHxAWCMV9HAULw5fEEd5rEmAi6` | — | 사이드바 `pid` 네비·전체 로드 | |
+| 14:30 | `dpl_8VTV5QgqCH9bHax52C7ux1L5QTbu` | — | 등록글 가져오기 3박스 UI | |
+| 14:39~15:38 | `dpl_9rxR…` 등 | — | 대표이미지·게시글 가져오기·파일 업로드 등 | 연속 배포 |
+| **19:13** | **`dpl_CANsJcBgwfh65ryfBipHPduqP35P`** | tag | 새글쓰기·모달 70% · **롤백 안정 기준** | **www 현재 가동** |
+| 19:35 | `dpl_BynmbNBwCfn17sLCgGjY5yHAsGQw` | — | 외부검색·복귀 버튼 | 불안정 → 롤백 |
+| 20:24 | `dpl_FooRsYvrNb7VCicuDA7HmzYM6wbH` | — | 모달 수정 | www 별칭 미연결 |
+| 22:24 | `dpl_FXVxTRrjhkHDkkgSzmoGwZ63v2uM` | — | 모달·불안정 기능 제거 시도 | www 별칭 미연결 |
+
+- **당일 Vercel production 배포:** 59회 (00:17~22:24 KST)
+- **git 동기화:** `d1448c8` (2026-06-27, 로컬 전체 스냅샷) — 배포별 커밋 없음
+- **운영 기준 tag:** `prod-canonical-2026-06-27` → Vercel **`dpl_CANs…`** (19:13)
+- **규칙:** `.cursor/rules/deploy-git-versioning.mdc` — 이후 **커밋 → 배포 → CHANGELOG**
+
 #### 2026-06-27 — Phase D: 데이터·운영 마무리
 
 | 구분 | 내용 |
@@ -134,7 +157,7 @@
 | WP REST | `nutrifarmer.kr` WP JSON **403** — import 스크립트 재실행 시 소스 접근 필요 |
 | WP 사용자 import + 재설정 메일 | 미실행 |
 | 구 R2 API 토큰 폐기 | `nutrifarmer-r2-wordpress` — Cloudflare에서 수동 삭제 권장 |
-| Git commit | **미반영** (워킹 트리 대량 변경) |
+| Git commit | `d1448c8` (2026-06-27 스냅샷) · tag `prod-canonical-2026-06-27` |
 
 ---
 
@@ -176,7 +199,7 @@
 - [x] R2 mirror host 별칭 (www/old) — 본문 gap 0
 - [ ] WP admin 등 추가 계정 — `wp-user-emails.json` 또는 WP_APP 인증 시 import
 - [ ] Cloudflare 구 R2 토큰 `nutrifarmer-r2-wordpress` 수동 삭제
-- [ ] CHANGELOG v3.0 릴리스 · Git tag
+- [x] CHANGELOG v3.0 배포표 · Git tag `prod-canonical-2026-06-27`
 
 ---
 

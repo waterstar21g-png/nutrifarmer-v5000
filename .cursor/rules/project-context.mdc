@@ -14,11 +14,11 @@ alwaysApply: true
 - **원본 참조**: https://www.nutrifarmer.kr/
 - **기술 스택**: Next.js 15 + TypeScript + Tailwind CSS + Vercel + **Vercel Postgres** + Cloudflare R2
 
-## 배포 정책 (필수 — 사용자 지시 2026-06-21)
-- **코드 변경 작업이 끝나면 사용자에게 묻지 말고 자동 배포**
-- 순서: `npm run build` 성공 확인 → `vercel --prod --yes` 실행 → 배포 URL·배포 ID 보고
-- **예외**: 사용자가 "배포하지 마" / "로컬만" 등으로 명시한 경우, 또는 빌드 실패 시
-- **커밋**: 사용자가 요청할 때만 (배포와 별개)
+## 배포 정책 (필수 — 2026-06-27 갱신)
+- **코드 변경 작업이 끝나면 사용자에게 묻지 말고 자동 배포** (단, **커밋 선행**)
+- 순서: `npm run build` → **git commit** → `vercel --prod --yes` → CHANGELOG·dpl ID 보고
+- **예외**: 사용자가 "배포하지 마" / "로컬만" / "커밋하지 마" 명시, 또는 빌드 실패
+- **상세**: `.cursor/rules/deploy-git-versioning.mdc`
 
 ## 배포 명령
 ```powershell
@@ -26,9 +26,10 @@ cd "D:/함께온라인/My_BLOG/nutrifarmer-v5000"
 vercel --prod --yes
 ```
 
-## 현재 상태 (2026-06-24 기준)
-- v2.5 UI (nav 8, Hero, Write 에디터) → **배포 완료**
-- **진행 중 (v3.0):** V5000 Native Platform — **무 WordPress** (REST·인증·게시 전부 V5000)
+## 현재 상태 (2026-06-27 기준)
+- **프로덕션 (www):** `dpl_CANsJcBgwfh65ryfBipHPduqP35P` · 19:13 KST · tag `prod-canonical-2026-06-27`
+- **git:** `d1448c8` + 이후 docs/rule 커밋 — Vercel 59회 배포와 1:1 아님 (CHANGELOG 배포표 참고)
+- **진행 중 (v3.0):** V5000 Native Platform — **무 WordPress**
 - **확정 spec:** `docs/V5000-native-platform-spec.md`
 - CHANGELOG: `docs/CHANGELOG.md` 참조
 
