@@ -1,7 +1,5 @@
 import Link from 'next/link';
-import type { WPCategory } from '@/lib/wordpress';
-
-interface Props { categories?: WPCategory[]; }
+import type { PreviewPost } from '@/lib/home-posts';
 
 const MAIN_CATS = [
   { slug: 'daily-life',       name: '일상 기록'   },
@@ -28,18 +26,17 @@ const FAMILY_CATS = [
   { slug: 'family-special',   name: '특별한 날'    },
 ];
 
-export function SiteFooter({ categories = [] }: Props) {
-  const recentCats = categories
-    .filter(c => c.count > 0 && c.parent === 0)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6);
+interface Props {
+  recentPosts?: PreviewPost[];
+}
+
+export function SiteFooter({ recentPosts = [] }: Props) {
+  const recent = recentPosts.slice(0, 6);
 
   return (
     <footer className="nf-footer">
       <div className="nf-footer__inner">
-
-        {/* 컬럼 1 — 브랜드 */}
-        <div>
+        <div className="nf-footer__brand-col">
           <p className="nf-footer__brand-name">탁월한 찬사</p>
           <p className="nf-footer__brand-desc">
             탁월한 찬사,<br />
@@ -49,7 +46,6 @@ export function SiteFooter({ categories = [] }: Props) {
           </p>
         </div>
 
-        {/* 컬럼 2 — 8가지 콘텐츠 */}
         <div>
           <p className="nf-footer__col-title">8가지 콘텐츠, 기록하는 삶</p>
           <ul className="nf-footer__links">
@@ -61,7 +57,6 @@ export function SiteFooter({ categories = [] }: Props) {
           </ul>
         </div>
 
-        {/* 컬럼 3 — 나누는 이야기 */}
         <div>
           <p className="nf-footer__col-title">나누는 이야기</p>
           <ul className="nf-footer__links">
@@ -73,7 +68,6 @@ export function SiteFooter({ categories = [] }: Props) {
           </ul>
         </div>
 
-        {/* 컬럼 4 — 자녀·손자들의 성장 기록 */}
         <div>
           <p className="nf-footer__col-title">자녀·손자들의 성장 기록</p>
           <ul className="nf-footer__links">
@@ -85,14 +79,13 @@ export function SiteFooter({ categories = [] }: Props) {
           </ul>
         </div>
 
-        {/* 컬럼 5 — 방금 올린 이야기들 */}
         <div>
           <p className="nf-footer__col-title">방금 올린 이야기들</p>
           <ul className="nf-footer__links">
-            {recentCats.length > 0
-              ? recentCats.map(cat => (
-                  <li key={cat.id}>
-                    <Link href={`/${cat.slug}`}>{cat.name}</Link>
+            {recent.length > 0
+              ? recent.map(post => (
+                  <li key={post.id}>
+                    <Link href={`/${post.categorySlug}/${post.slug}`}>{post.title}</Link>
                   </li>
                 ))
               : MAIN_CATS.slice(0, 6).map(cat => (
@@ -103,7 +96,6 @@ export function SiteFooter({ categories = [] }: Props) {
             }
           </ul>
         </div>
-
       </div>
 
       <div className="nf-footer__bottom">

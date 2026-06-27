@@ -1,8 +1,11 @@
 /**
- * nutrifarmer-v5000 — WordPress REST API 연동
+ * WordPress REST — **마이그레이션 스크립트 전용** (런타임 app/ 에서 import 금지)
+ * @see scripts/v5000-migrate-from-wp.mjs · scripts/migrate-wp-images-to-r2.mjs
  */
 
-const API = process.env.WP_API_URL ?? 'https://www.nutrifarmer.kr/wp-json';
+import { resolveMediaUrlSync } from '@/lib/v5000-content/media-mirror';
+
+const API = process.env.WP_API_URL?.trim() || 'https://www.nutrifarmer.kr/wp-json';
 
 export interface WPPost {
   id: number;
@@ -85,9 +88,7 @@ export async function getCategoryById(id: number): Promise<WPCategory | null> {
 
 export function getFeaturedImageUrl(post: WPPost): string {
   const src = post._embedded?.['wp:featuredmedia']?.[0]?.source_url ?? '';
-  const cdn = process.env.NEXT_PUBLIC_CDN_URL;
-  if (cdn && src) return src.replace(/^https?:\/\/[^/]+\/wp-content\/uploads/, cdn);
-  return src;
+  return resolveMediaUrlSync(src);
 }
 
 export function getPostCategories(post: WPPost): WPCategory[] {

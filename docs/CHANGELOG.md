@@ -7,14 +7,185 @@
 
 ---
 
-## [미배포 대기] — 2026-06-21
+## [v3.0] — 진행 중 · V5000 Native Platform (무 WordPress)
 
-### SiteHeader 네비게이션 카테고리 고정 8개로 변경
+> **Spec:** [`docs/V5000-native-platform-spec.md`](V5000-native-platform-spec.md)  
+> **상태:** Phase C·D 완료 (2026-06-27) · **Git 미커밋**
+
+> 본 CHANGELOG는 **V5000**(`nutrifarmer-v5000`) 전용. V3000/V4000은 마이그레이션·참조 언급 시에만 기록.
+
+### 확정 결정 (2026-06-24)
+
+| 항목 | 결정 |
+|------|------|
+| DB | **Vercel Postgres** |
+| 미디어 | **Cloudflare R2** (`media.nutrifarmer.kr` CDN) |
+| WordPress | **런타임 미사용** — app/ 에서 WP REST 제거 (2026-06-27) |
+| 회원가입 | **공개 가입** |
+| WP 계정 이전 | **강제 비밀번호 재설정** (해시 이전 없음) |
+
+---
+
+### 작업 로그 (보관)
+
+#### 2026-06-24 — 플랫폼 방향 확정 · 인증 설계
+
+- V5000 / v4000 / v3000 **완전 분리** 원칙 확정 (Docker·WordPress 불필요)
+- `docs/V5000-native-platform-spec.md` 작성
+- `.cursor/rules/project-context.mdc` — Native Platform·무 WP 반영
+- 운영 진단: Vercel env (`WP_*`, `RESEND`, `NF_V5000_SERVER_KEY`) · WP 4.2.0 `auth_cookies` 부재 → **WP 브릿지 폐기 결정**
+
+#### 2026-06-24~25 — Phase A: V5000 Native Auth
+
+| 구분 | 내용 |
+|------|------|
+| DB | `drizzle/0000_v5000_auth.sql` — `v5000_users`, `v5000_password_resets` |
+| ORM | Drizzle + `@neondatabase/serverless` |
+| lib | `lib/v5000-auth/` — config · db · schema · session · password · validate · users · recovery · api |
+| API | `/api/v5000/auth/login` · `register` · `logout` · `me` · `find` · `lost` · `verify-code` · `reset-password` |
+| UI | `app/login/` · `components/auth/LoginHub.tsx` — **register 패널 V5000 내장** (WP 외부 링크 제거) |
+| 세션 | 쿠키 `nf-v5000-session` (HMAC) · `middleware.ts` `/write` 보호 |
+| 게이트 | `components/auth/WriteGate.tsx` → `/api/v5000/auth/me` |
+| 팝업 | `lib/auth-navigation.ts` — 글쓰기/로그인 최대화 팝업 |
+| 스크립트 | `scripts/db-migrate.mjs` · `scripts/setup-v5000-db.mjs` |
+| env | `.env.example` — `POSTGRES_URL`, `AUTH_SESSION_SECRET`, Resend, R2 |
+| 제거 | 레거시 `/api/auth/*`, `lib/wp-session.ts`, `lib/wp-auth-proxy.ts`, `/api/wp/*` |
+
+#### 2026-06-25 — UI parity (nutrifarmer.kr 동작 재현)
+
+| 구분 | 내용 |
+|------|------|
+| 헤더 nav 8 | `lib/home-hero-bus.ts` + `SiteHeader` — 홈에서 카테고리 클릭 시 **히어로 글 필터** (쇼케이스 미리보기 아님) |
+| HOME 버튼 | `SiteHeader` — 홈 히어로 마케팅 슬라이드 복귀 |
+| Stats 4 | `StatsSection` — 4개 버튼 각각 **안내 패널** (`FEATURE_PANELS` in `lib/site-data.ts`) |
+| 쇼케이스 8 | `PreviewCardGrid` · `CategoryPreviewPanel` — 카드 아래 **인라인 미리보기** ·「아래 더 보기」확장 |
+| 래퍼 | `components/HomeHeroBlock.tsx` — Hero + Stats 통합 |
+| 히어로 | `HeroSlider` — nav 선택 시 해당 카테고리 최신 글 배너 |
+| 데이터 | `lib/home-posts.ts` — 미러 URL 일괄 해석 |
+| 배포 | `dpl_5EeGLojeMZwdV76m4GAPUdi3zcEy` · `dpl_Cc9p4CXNTgmvLbiaNNTKxzyLrPpr` |
+
+#### 2026-06-25 — R2 미디어 마이그레이션 (속도 개선)
+
+| 구분 | 내용 |
+|------|------|
+| DB | `drizzle/0002_v5000_media_mirror.sql` — `v5000_media_mirror` (wp_url → r2_key, public_url) |
+| lib | `lib/v5000-content/media-mirror.ts` — `resolveMediaUrl`, `rewriteHtmlMediaUrls` |
+| 스크립트 | `scripts/migrate-wp-images-to-r2.mjs` (`npm run media:migrate-wp`) |
+| 실행 | WP 이미지 **807/808** → R2 `nutrifarmer-media` + DB 메타 (1건 WP 502) |
+| CDN | `https://media.nutrifarmer.kr/uploads/...` — 홈·단일글 이미지 URL 전환 확인 |
+| 배포 | `dpl_Cc9p4CXNTgmvLbiaNNTKxzyLrPpr` |
+
+#### 2026-06-25 — R2 S3 키 교체 (보안)
+
+| 구분 | 내용 |
+|------|------|
+| 문제 | Vercel R2 env 값 비어 있음 · 메모장 평문 Access Key 노출 |
+| 조치 | Cloudflare R2 **User API Token** `nutrifarmer-v5000` 발급 |
+| 스크립트 | `scripts/apply-r2-keys.mjs` (`npm run r2:apply`) · `scripts/rotate-r2-keys.mjs` (`npm run r2:rotate`) |
+| Vercel | `R2_ACCESS_KEY_ID` · `R2_SECRET_ACCESS_KEY` · `R2_ACCOUNT_ID` · `R2_BUCKET_NAME` Production 교체 |
+| 정리 | `NotePad_자료/` 평문 키 삭제 · `R2_ROTATION_KEYS.txt` 적용 후 비움 |
+| 배포 | `dpl_8rH5frAHmoFQUEbRD2GcMiGKXotn` |
+| 수동 | 구 토큰 `nutrifarmer-r2-wordpress` Cloudflare에서 **삭제 권장** |
+
+#### 2026-06-25 — Phase B: 콘텐츠 API · Write 전환
+
+| 구분 | 내용 |
+|------|------|
+| DB | `drizzle/0001_v5000_content.sql` — `v5000_posts`, `v5000_media` |
+| DB | `drizzle/0002_v5000_media_mirror.sql` — WP 이미지 미러 메타 |
+| lib | `lib/v5000-content/` — posts · schema · slug · categories · validate · r2 · blob · media · media-mirror |
+| API | `/api/v5000/posts` · `/api/v5000/posts/[id]` · `/api/v5000/media` · `/api/v5000/files/[...key]` |
+| Write | `WriteEditor` — `CONTENT_API=/api/v5000` (WP proxy 제거) |
+| 탭 | `PhotoTab` · `FileTab` — `/api/v5000/media` 업로드 |
+| AI | `/api/v5000/ai/complete` — OpenAI (`OPENAI_API_KEY`), 미설정 시 로컬 폴백 |
+| R2 | `lib/v5000-content/r2.ts` · 스크립트 `migrate-wp-images-to-r2.mjs` · `rotate-r2-keys.mjs` · `apply-r2-keys.mjs` |
+| 폴백 | `@vercel/blob` — R2 미설정 시 |
+| 라우트 | `app/(site)/` route group — 홈·카테고리·단일글 레이아웃 분리 |
+
+#### 2026-06-27 — Phase D: 데이터·운영 마무리
+
+| 구분 | 내용 |
+|------|------|
+| 글 import | `old.nutrifarmer.kr` WP REST — **229건 published** (216 WP + 기존 V5000 글, slug 중복 skip) |
+| 사용자 | `waterstar21` — V5000 기존 계정 `migration_source=wp` 표시 (`users:migrate-wp --mark-existing`) |
+| 스크립트 | `scripts/v5000-migrate-users-from-wp.mjs` · `_wp-api.mjs` (old 호스트 fallback) |
+| R2 | `r2:backfill-hosts` — www/old URL 별칭 **807→1614** mirror rows, 본문 gap **0건** |
+| R2 | `r2:retry-missing` — 미러 누락 URL 재업로드 (R2 env 필요) |
+| npm | `users:migrate-wp` · `db:status` · `r2:backfill-hosts` · `r2:retry-missing` |
+| 수동 | Cloudflare **`nutrifarmer-r2-wordpress`** 구 API 토큰 삭제 (대시보드) |
+| 선택 | `scripts/wp-user-emails.json` + `WP_APP_USER/PASSWORD` — admin 등 추가 WP 계정 import |
+
+#### 2026-06-27 — Phase C: Postgres 단독 읽기 (WP 런타임 제거)
+
+| 구분 | 내용 |
+|------|------|
+| lib | `lib/site-content.ts` — `v5000_posts` 단독 (WP 병합 레이어 삭제) |
+| lib | `lib/site-post-card.ts` — `WPPost` UI 타입 대체 |
+| 페이지 | `app/(site)/[category]/*` — WP 폴백·`getCategoryBySlug` 제거 |
+| 검색 | `/api/search/posts` · 홈 검색 — Postgres `searchPublishedPosts` |
+| 격리 | `lib/wordpress.ts` — **마이그레이션 스크립트 전용** (app/ import 없음) |
+| 배포 | `dpl_9e87eM5gU9Pw87s3A9M9BBG1TXH2` → https://www.nutrifarmer.kr |
+
+#### 2026-06-25 — 미완 · 다음 (Phase D~)
+
+| 항목 | 상태 |
+|------|------|
+| WP 글 Postgres import | ⚠️ Production DB 확인 필요 — 로컬 `.env.local` DB는 published 0건 (2026-06-27) |
+| WP REST | `nutrifarmer.kr` WP JSON **403** — import 스크립트 재실행 시 소스 접근 필요 |
+| WP 사용자 import + 재설정 메일 | 미실행 |
+| 구 R2 API 토큰 폐기 | `nutrifarmer-r2-wordpress` — Cloudflare에서 수동 삭제 권장 |
+| Git commit | **미반영** (워킹 트리 대량 변경) |
+
+---
+
+### Phase 체크리스트
+
+**Phase A — Auth**
+
+- [x] Drizzle 스키마 + 마이그레이션 SQL
+- [x] `lib/v5000-auth/` + `/api/v5000/auth/*`
+- [x] `nf-v5000-session` · middleware · LoginHub register
+- [x] 레거시 WP auth 브릿지 코드 제거
+- [x] Production Postgres migrate (`0000`~`0002`)
+- [x] `AUTH_SESSION_SECRET` · Resend Production
+- [x] `vercel --prod` 다회 배포 (최신 `dpl_8rH5frAHmoFQUEbRD2GcMiGKXotn`)
+
+**Phase B — Write·미디어**
+
+- [x] `v5000_posts` / `v5000_media` 스키마 + API
+- [x] WriteEditor · PhotoTab · FileTab v5000 API 전환
+- [x] R2 업로드 + Vercel Blob 폴백
+- [x] R2 Production env + S3 키 교체 (`nutrifarmer-v5000`)
+- [x] WP 이미지 R2 마이그레이션 (807/808) + `v5000_media_mirror`
+
+**Phase B+ — UI parity (nutrifarmer.kr)**
+
+- [x] 헤더 nav 8 → 히어로 필터
+- [x] Stats 4 → 안내 패널
+- [x] 쇼케이스 8 → 인라인 미리보기 + 아래 더 보기
+
+**Phase C — 읽기**
+
+- [x] `lib/site-content.ts` — Postgres `v5000_posts` 단독 읽기
+- [x] `lib/wordpress.ts` app/ 런타임 import 제거 (스크립트 전용)
+
+**Phase D — 마이그레이션**
+
+- [x] WP 글 Postgres — 229 published (Production DB 확인 2026-06-27)
+- [x] WP 사용자 — 주 계정 `waterstar21` migration_source 표시
+- [x] R2 mirror host 별칭 (www/old) — 본문 gap 0
+- [ ] WP admin 등 추가 계정 — `wp-user-emails.json` 또는 WP_APP 인증 시 import
+- [ ] Cloudflare 구 R2 토큰 `nutrifarmer-r2-wordpress` 수동 삭제
+- [ ] CHANGELOG v3.0 릴리스 · Git tag
+
+---
+
+## [v2.5] — 2026-06-21 SiteHeader nav 8개 고정 배포
 - **파일**: `components/SiteHeader.tsx`
 - WordPress API 카테고리 대신 `SHOWCASE_CATS`(site-data.ts) 고정 사용
 - 변경 전(WP 실제값 6개): 가족 사진 / 가족·성장 / 개인 자료 / 삶·사진 / 손자 성장일기 / 수익관리
 - 변경 후(고정 8개): 일상 기록 / 가족·성장 / 개인 자료 / 프로그램 / 삶·사진 / 수익관리 / 전문 글쓰기 / 주변 이야기
-- **배포 유보 중** (확인 후 `vercel --prod --yes` 실행)
+- **배포 완료**: `vercel --prod` → https://nutrifarmer-v5000.vercel.app (dpl_DaazMfTT9w9iUFvyLeG3e7NpJRzg)
 
 ---
 
@@ -206,43 +377,51 @@
 
 ---
 
-## 현재 프로젝트 파일 구조
+## 현재 프로젝트 파일 구조 (v3.0 작업 반영 · 2026-06-25)
 
 ```
 nutrifarmer-v5000/
 ├── app/
-│   ├── layout.tsx              # 루트 레이아웃 (Noto Sans KR, SiteHeader/Footer)
-│   ├── page.tsx                # 홈페이지
-│   ├── globals.css             # 전역 CSS (--nf-* 변수 체계)
-│   ├── not-found.tsx           # 404
-│   ├── write/
-│   │   ├── layout.tsx          # 헤더/푸터 제외 레이아웃
-│   │   ├── page.tsx            # AI 글쓰기 진입
-│   │   └── write.css           # 에디터 전용 스타일
-│   └── [category]/
-│       ├── page.tsx            # 카테고리 목록
-│       └── [slug]/page.tsx     # 단일글
+│   ├── (site)/                 # 홈·카테고리·단일글 (Postgres 읽기)
+│   │   ├── page.tsx
+│   │   ├── layout.tsx
+│   │   └── [category]/
+│   ├── login/                  # V5000 로그인 허브
+│   ├── write/                  # AI 글쓰기 (v5000 API 게시)
+│   ├── api/v5000/
+│   │   ├── auth/               # Native Auth 8 routes
+│   │   ├── posts/              # Postgres CRUD
+│   │   ├── media/              # R2 업로드
+│   │   └── files/[...key]/     # R2 파일 서빙
+│   └── layout.tsx
 ├── components/
-│   ├── SiteHeader.tsx          # ← nav 8개 고정 (배포 유보)
-│   ├── SiteFooter.tsx
-│   ├── HeroSlider.tsx          # 드래그 슬라이더
-│   ├── StatsSection.tsx        # 통계 카운터
-│   ├── GalleryGrid.tsx
-│   ├── CategorySearch.tsx
-│   ├── SidebarSearch.tsx
-│   └── write/
-│       ├── WriteEditor.tsx
-│       ├── ChatPanel.tsx
-│       ├── DraftPanel.tsx
-│       └── tabs/
-│           ├── PhotoTab.tsx
-│           ├── VideoTab.tsx
-│           └── FileTab.tsx
+│   ├── auth/                   # LoginHub · WriteGate
+│   ├── write/
+│   ├── HomeHeroBlock.tsx
+│   ├── PreviewCardGrid.tsx
+│   ├── CategoryPreviewPanel.tsx
+│   └── ...
 ├── lib/
-│   ├── site-data.ts            # 카테고리/섹션 고정 데이터 (단일 진실의 원천)
-│   └── wordpress.ts            # WP REST API 함수
+│   ├── v5000-auth/             # 인증 (Postgres)
+│   ├── v5000-content/          # 글·미디어 (Postgres + R2)
+│   ├── site-data.ts            # 카테고리 UI 고정 8개 · FEATURE_PANELS
+│   ├── home-hero-bus.ts        # 홈 nav → 히어로 필터
+│   ├── home-posts.ts           # 미러 URL 일괄 해석
+│   ├── auth-navigation.ts
+│   └── wordpress.ts            # 마이그레이션 스크립트 전용
+├── drizzle/
+│   ├── 0000_v5000_auth.sql
+│   ├── 0001_v5000_content.sql
+│   └── 0002_v5000_media_mirror.sql
+├── scripts/
+│   ├── db-migrate.mjs
+│   ├── setup-v5000-db.mjs
+│   ├── migrate-wp-images-to-r2.mjs   # npm run media:migrate-wp
+│   ├── apply-r2-keys.mjs             # npm run r2:apply
+│   └── rotate-r2-keys.mjs            # npm run r2:rotate
 └── docs/
-    └── CHANGELOG.md            # ← 현재 파일
+    ├── CHANGELOG.md
+    └── V5000-native-platform-spec.md
 ```
 
 ---
@@ -254,12 +433,25 @@ V5000 작업 재개.
 경로: D:/함께온라인/My_BLOG/nutrifarmer-v5000
 GitHub: https://github.com/waterstar21g-png/nutrifarmer-v5000
 배포URL: https://nutrifarmer-v5000.vercel.app
-CHANGELOG: docs/CHANGELOG.md 참조
+SPEC: docs/V5000-native-platform-spec.md
+CHANGELOG: docs/CHANGELOG.md (v3.0 작업 로그 보관)
 
-[배포 유보 중]
-- SiteHeader nav 8개 수정 완료, 배포만 안 됨
-  → 배포 명령: cd nutrifarmer-v5000 && vercel --prod --yes
+[확정 — v3.0]
+- DB: Vercel Postgres | 미디어: R2 | WP 런타임 제거 목표
+- 공개 회원가입 | WP 계정 → 강제 비밀번호 재설정
 
-[다음 작업]
-- (여기에 입력)
+[완료 — Production 2026-06-25]
+- Phase A/B: Auth + Write + Postgres migrate
+- R2: 이미지 807개 마이그레이션 + CDN media.nutrifarmer.kr
+- R2: S3 키 교체 (nutrifarmer-v5000) + Vercel env
+- UI: nutrifarmer.kr parity (헤더·Stats·쇼케이스)
+- 배포: dpl_8rH5frAHmoFQUEbRD2GcMiGKXotn
+
+[완료 — 2026-06-27]
+- Phase D: 글 229 · 사용자 wp 표시 · R2 host 별칭 1614 rows
+
+[미완 — 수동/선택]
+- Cloudflare: 구 토큰 nutrifarmer-r2-wordpress 삭제
+- WP admin import (wp-user-emails.json)
+- Git tag v3.0
 ```

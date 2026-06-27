@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './write.css';
 import { WriteEditor } from '@/components/write/WriteEditor';
+import { WriteGate } from '@/components/auth/WriteGate';
 
 export const metadata: Metadata = {
   title: 'AI 글쓰기 — 탁월한 찬사',
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function WritePage() {
-  return <WriteEditor />;
+  return (
+    <WriteGate>
+      <WriteEditor />
+    </WriteGate>
+  );
 }

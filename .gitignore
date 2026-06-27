@@ -7,3 +7,7 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+.env*
+.tmp-*
+scripts/wp-user-emails.json
+scripts/_check-r2-gaps.mjs

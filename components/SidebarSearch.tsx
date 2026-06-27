@@ -1,11 +1,16 @@
 'use client';
-import { useState, useMemo } from 'react';
+
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { postHref } from '@/lib/post-href';
 
 interface SidebarPost {
+  key?: string;
   id: number;
   slug: string;
   title: { rendered: string };
+  pid?: number;
 }
 
 interface Props {
@@ -17,6 +22,23 @@ interface Props {
 
 export function SidebarSearch({ posts, catSlug, catName, currentSlug }: Props) {
   const [query, setQuery] = useState('');
+  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
+  const pathname = usePathname();
+
+  const urlSlug = useMemo(() => {
+    const prefix = `/${catSlug}/`;
+    if (!pathname.startsWith(prefix)) return currentSlug;
+    const segment = pathname.slice(prefix.length).split('/')[0]?.split('?')[0] ?? '';
+    return segment || currentSlug;
+  }, [pathname, catSlug, currentSlug]);
+
+  const activeSlug = pendingSlug ?? urlSlug;
+
+  useEffect(() => {
+    if (pendingSlug && urlSlug === pendingSlug) {
+      setPendingSlug(null);
+    }
+  }, [pendingSlug, urlSlug]);
 
   const annotated = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -28,65 +50,74 @@ export function SidebarSearch({ posts, catSlug, catName, currentSlug }: Props) {
   }, [posts, query]);
 
   const isSearching = query.trim().length > 0;
-  const matchCount  = annotated.filter(p => p.match).length;
+  const matchCount = annotated.filter(p => p.match).length;
 
   return (
-    <aside className="nf-sidebar">
-      {/* 검색창 */}
-      <div className="nf-sidebar__search">
-        <input
-          type="search"
-          className="nf-sidebar__search-input"
-          placeholder="검색..."
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          aria-label="글 제목 검색"
-          autoComplete="off"
-        />
-        <button
-          className="nf-sidebar__search-btn"
-          onClick={() => setQuery('')}
-          aria-label={query ? '검색 초기화' : '검색'}
-          title={query ? '초기화' : '검색'}
-        >
-          {query ? '✕' : '🔍'}
-        </button>
+    <aside className="nf-sidebar" aria-label="카테고리 글 검색">
+      <div className="nf-sidebar-search-panel">
+        <div className="nf-sidebar__search nf-sidebar__search--inline">
+          <input
+            type="search"
+            className="nf-sidebar__search-input"
+            placeholder="검색..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            aria-label="글 제목 검색"
+            autoComplete="off"
+          />
+          <button
+            type="button"
+            className="nf-sidebar__search-icon"
+            onClick={() => setQuery('')}
+            aria-label={query ? '검색 초기화' : '검색'}
+            title={query ? '초기화' : '검색'}
+          >
+            {query ? '✕' : '🔍'}
+          </button>
+        </div>
+        {isSearching && (
+          <div className="nf-sidebar__search-info">
+            {matchCount > 0 ? `${matchCount}개 일치` : '일치하는 글 없음'}
+          </div>
+        )}
       </div>
 
-      {/* 카테고리 배지 (타원형) */}
-      <Link href={`/${catSlug}`} className="nf-sidebar__cat-badge">
-        {catName}
-      </Link>
+      <div className="nf-sidebar-categories-panel">
+        <Link href={`/${catSlug}`} className="nf-sidebar__cat-badge">
+          {catName}
+        </Link>
 
-      {/* 검색 중 결과 수 표시 */}
-      {isSearching && (
-        <div className="nf-sidebar__search-info">
-          {matchCount > 0 ? `${matchCount}개 일치` : '일치하는 글 없음'}
-        </div>
-      )}
+        <ul className="nf-sidebar__list nf-sidebar-post-list">
+          {annotated.map(p => {
+            const isActive = p.slug === activeSlug;
+            const isMatch = isSearching && p.match;
+            const isDim = isSearching && !p.match && !isActive;
+            const itemKey = p.key ?? `${p.pid ? 'v5000' : 'wp'}-${p.id}`;
 
-      {/* 글 목록 — 검색어 입력시 역상(하이라이트) 처리 */}
-      <ul className="nf-sidebar__list">
-        {annotated.map(p => {
-          const isActive = p.slug === currentSlug;
-          const isDim    = isSearching && !p.match;
-          const isMatch  = isSearching && p.match;
-
-          return (
-            <li
-              key={p.id}
-              className={[
-                'nf-sidebar__list-item',
-                isActive ? 'is-active' : '',
-                isMatch  ? 'is-match'  : '',
-                isDim    ? 'is-dim'    : '',
-              ].filter(Boolean).join(' ')}
-            >
-              <Link href={`/${catSlug}/${p.slug}`}>{p.title}</Link>
-            </li>
-          );
-        })}
-      </ul>
+            return (
+              <li
+                key={itemKey}
+                className={[
+                  'nf-sidebar__list-item',
+                  'nf-sidebar-post-item',
+                  isActive ? 'is-active' : '',
+                  isMatch ? 'is-match' : '',
+                  isDim ? 'is-dim' : '',
+                ].filter(Boolean).join(' ')}
+              >
+                <Link
+                  href={postHref(catSlug, p.slug, p.pid)}
+                  className="nf-sidebar-post-link"
+                  onClick={() => setPendingSlug(p.slug)}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {p.title}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </aside>
   );
 }

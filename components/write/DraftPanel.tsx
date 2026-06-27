@@ -1,212 +1,307 @@
 'use client';
-import { useState, useRef, useCallback, useEffect } from 'react';
-import type { DraftState, WpCategory, WpPost, InsertedImage } from './WriteEditor';
+
+import { useState, useRef, useCallback } from 'react';
+import type { DraftState, EditorCategory, EditorPost, InsertedImage, PreviewImage, WritePhase } from './WriteEditor';
+import type { ImagePastePosition } from './ImagePreviewGrid';
+import { ImagePreviewGrid } from './ImagePreviewGrid';
+import { PostLoadPanel } from './PostLoadPanel';
+import { BodyEditor } from './BodyEditor';
+import { stripBodyPlain, bodyHtmlForPreview } from '@/lib/write-body-plain';
+import { buildBodyImageFigureHtml, normalizeBodyImagesForEditor } from '@/lib/write-body-images';
+import { useWriteMessage } from './WriteMessageContext';
 
 interface Props {
   draft: DraftState;
   setDraft: React.Dispatch<React.SetStateAction<DraftState>>;
-  tab: 'correct' | 'publish';
-  setTab: (t: 'correct' | 'publish') => void;
-  categories: WpCategory[];
+  phase: WritePhase;
+  setPhase: (p: WritePhase) => void;
+  categories: EditorCategory[];
   onSave: () => void;
   onPublish: () => void;
-  onBackToCorrect: () => void;
-  wpApiUrl: string;
+  onBackToFinalize: () => void;
+  onViewPost: () => void;
+  previewLoading?: boolean;
+  onRemovePreviewImage: (id: string) => void;
+  onPasteStatus?: (msg: string) => void;
+  onSelectBodyRevision: (rev: number) => void;
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
 }
 
 export function DraftPanel({
-  draft, setDraft, tab, setTab,
-  categories, onSave, onPublish, onBackToCorrect, wpApiUrl,
+  draft, setDraft, phase, setPhase,
+  categories, onSave, onPublish, onBackToFinalize, onViewPost,
+  previewLoading, onRemovePreviewImage, onPasteStatus, onSelectBodyRevision,
 }: Props) {
-  const [postList,    setPostList]    = useState<WpPost[]>([]);
-  const [pickerOpen,  setPickerOpen]  = useState(false);
-  const [pickerQ,     setPickerQ]     = useState('');
-  const [versions,    setVersions]    = useState<string[]>([]);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [versions, setVersions] = useState<string[]>([]);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const msg = useWriteMessage();
 
-  /* 글 목록 가져오기 */
-  const fetchPosts = useCallback(async () => {
-    const url = draft.categoryId
-      ? `${wpApiUrl}/wp/v2/posts?categories=${draft.categoryId}&per_page=30&_fields=id,title,excerpt,content,categories,status,link`
-      : `${wpApiUrl}/wp/v2/posts?per_page=30&_fields=id,title,excerpt,content,categories,status,link`;
-    try {
-      const r = await fetch(url, { credentials: 'include' });
-      if (!r.ok) return;
-      setPostList(await r.json());
-    } catch {}
-  }, [wpApiUrl, draft.categoryId]);
+  const appendBodyHtml = useCallback((html: string, position: 'inline' | 'top' | 'bottom') => {
+    const el = bodyRef.current;
+    if (position === 'inline' && el) {
+      el.focus();
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && el.contains(sel.anchorNode)) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        const tpl = document.createElement('template');
+        tpl.innerHTML = html;
+        const node = tpl.content.firstChild;
+        if (node) {
+          range.insertNode(node);
+          range.setStartAfter(node);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+        setDraft(d => ({ ...d, body: normalizeBodyImagesForEditor(el.innerHTML) }));
+        return;
+      }
+    }
+    setDraft(d => ({
+      ...d,
+      body: position === 'top'
+        ? normalizeBodyImagesForEditor(html + d.body)
+        : normalizeBodyImagesForEditor(d.body + html),
+    }));
+  }, [setDraft]);
 
-  useEffect(() => { if (pickerOpen) fetchPosts(); }, [pickerOpen, fetchPosts]);
+  const insertImageAtCursor = useCallback((url: string, alt: string) => {
+    appendBodyHtml(buildBodyImageFigureHtml(url, alt), 'inline');
+  }, [appendBodyHtml]);
 
-  /* 버전 저장 */
   const saveVersion = useCallback(() => {
     if (!draft.body.trim()) return;
     setVersions(v => [draft.body, ...v].slice(0, 10));
-  }, [draft.body]);
+    onSave();
+  }, [draft.body, onSave]);
 
-  /* 커서 위치에 이미지 삽입 */
-  const insertImageAtCursor = useCallback((url: string, alt: string) => {
-    const ta = bodyRef.current;
-    if (!ta) { setDraft(d => ({ ...d, body: `${d.body}\n![${alt}](${url})\n` })); return; }
-    const pos = ta.selectionStart ?? draft.body.length;
-    const tag  = `\n![${alt}](${url})\n`;
-    setDraft(d => ({
-      ...d,
-      body: d.body.slice(0, pos) + tag + d.body.slice(pos),
-    }));
-    requestAnimationFrame(() => {
-      ta.focus();
-      ta.setSelectionRange(pos + tag.length, pos + tag.length);
+  const clearEditorForLoad = useCallback(() => {
+    setDraft({
+      categorySlug: '',
+      title: '',
+      excerpt: '',
+      body: '',
+      bodyRevision: 0,
+      bodySnapshots: [],
+      viewingRevision: 0,
+      images: [],
+      previewImages: [],
+      postId: null,
+      postSlug: '',
     });
-  }, [draft.body, setDraft]);
+  }, [setDraft]);
 
-  /* 기존 글 불러와 초안에 적용 */
-  const loadPost = useCallback((p: WpPost) => {
+  const applyLoadedPost = useCallback((p: EditorPost, images: PreviewImage[]) => {
     setDraft(d => ({
       ...d,
       postId: p.id,
-      title:   p.title.rendered.replace(/<[^>]+>/g, ''),
-      excerpt: p.excerpt.rendered.replace(/<[^>]+>/g, ''),
-      body:    p.content.rendered.replace(/<[^>]+>/g, ''),
-      categoryId: p.categories[0] ?? d.categoryId,
+      postSlug: p.slug,
+      title: stripHtml(p.title),
+      excerpt: stripHtml(p.excerpt),
+      body: normalizeBodyImagesForEditor(p.body),
+      previewImages: images,
+      images: [],
+      bodyRevision: 0,
+      bodySnapshots: [],
+      viewingRevision: 0,
+      categorySlug: p.categorySlug || d.categorySlug,
     }));
     setPickerOpen(false);
-    setTab('correct');
-  }, [setDraft, setTab]);
+    setPhase('finalize');
+    onPasteStatus?.(`✅ 「${stripHtml(p.title)}」 글을 에디터에 적용했습니다.`);
+  }, [setDraft, setPhase, onPasteStatus]);
 
-  const filtered = pickerQ
-    ? postList.filter(p => p.title.rendered.toLowerCase().includes(pickerQ.toLowerCase()))
-    : postList;
+  const onBodyChange = useCallback((html: string) => {
+    setDraft(d => ({ ...d, body: html }));
+  }, [setDraft]);
 
-  const catName = categories.find(c => c.id === draft.categoryId)?.name ?? '카테고리 없음';
+  const pastePreviewToBody = useCallback((img: PreviewImage, position: ImagePastePosition) => {
+    const alt = (img.alt || img.keyword || '이미지').slice(0, 100);
+    const figure = buildBodyImageFigureHtml(img.url, alt);
+    const entry: InsertedImage = {
+      id: `img-${Date.now()}`,
+      url: img.url,
+      alt,
+      position,
+    };
+    const posLabel = { inline: '커서 위치', top: '본문상', bottom: '본문하' }[position];
 
-  /* 인라인 삽입 대기 이미지 */
+    appendBodyHtml(figure, position);
+    setDraft(d => ({ ...d, images: [...d.images, entry] }));
+    onPasteStatus?.(`✅ 「${img.keyword || alt}」 → ${posLabel}에 넣었습니다.`);
+  }, [appendBodyHtml, setDraft, onPasteStatus]);
+
+  const hasEditorContent = Boolean(
+    draft.title.trim() || draft.excerpt.trim() || stripBodyPlain(draft.body).length > 0,
+  );
+
+  const catName = categories.find(c => c.slug === draft.categorySlug)?.name ?? '카테고리 없음';
   const inlineImgs = draft.images.filter(i => i.position === 'inline');
+
+  const goPreview = async () => {
+    if (!draft.categorySlug) {
+      await msg.alert({
+        screen: '3차 · 글쓰기 완성',
+        message: '카테고리를 선택하지 않았습니다.',
+        guidance: '카테고리 드롭다운에서 게시할 분류를 선택한 뒤 [배포/게시]를 눌러 주세요.',
+        confirmLabel: '확인',
+      });
+      return;
+    }
+    setPhase('preview');
+  };
 
   return (
     <div className="nfw-draft">
-      {/* 탭 헤더 */}
       <div className="nfw-draft__head">
-        <div className="nfw-draft__tabs">
-          <button className={`nfw-draft__tab${tab === 'correct' ? ' is-active' : ''}`} onClick={() => setTab('correct')}>
-            📝 교정 (초안)
-          </button>
-          <button className={`nfw-draft__tab${tab === 'publish' ? ' is-active' : ''}`} onClick={() => setTab('publish')}>
-            🚀 배포
-          </button>
-        </div>
+        <span className="nfw-draft__phase-label">
+          {phase === 'finalize' ? '3차 · 글쓰기 완성' : '4차 · 배포-미리보기'}
+        </span>
         <div className="nfw-draft__head-actions">
-          {tab === 'correct' && (
+          {phase === 'finalize' && (
             <>
-              <button className="nfw-btn nfw-btn--sm" onClick={() => setPickerOpen(v => !v)}>가져오기</button>
-              <button className="nfw-btn nfw-btn--sm" onClick={saveVersion}>버전저장</button>
-              <button className="nfw-btn nfw-btn--sm" onClick={onSave}>임시저장</button>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-btn--primary" onClick={goPreview}>
+                배포/게시
+              </button>
+              <button type="button" className="nfw-btn nfw-btn--sm" onClick={onViewPost}>
+                게시글보기
+              </button>
+              <button type="button" className="nfw-btn nfw-btn--sm" onClick={() => setPickerOpen(v => !v)}>
+                등록글 가져오기
+              </button>
+              <button type="button" className="nfw-btn nfw-btn--sm" onClick={saveVersion}>
+                임시저장/버전관리
+              </button>
             </>
           )}
-          {tab === 'publish' && (
+          {phase === 'preview' && (
             <>
-              <button className="nfw-btn nfw-btn--sm" onClick={onBackToCorrect}>⬅ 재교정</button>
-              <button className="nfw-btn nfw-btn--sm nfw-btn--primary" onClick={onPublish}>🚀 게시</button>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-btn--primary" onClick={onPublish}>
+                게시하기
+              </button>
+              <button type="button" className="nfw-btn nfw-btn--sm" onClick={onViewPost}>
+                게시글보기
+              </button>
+              <button type="button" className="nfw-btn nfw-btn--sm" onClick={onBackToFinalize}>
+                재교정하기
+              </button>
             </>
           )}
         </div>
       </div>
 
-      {/* 포스트 피커 */}
       {pickerOpen && (
-        <div className="nfw-picker">
-          <div className="nfw-picker__head">
-            <span>기존 글 불러오기</span>
-            <input className="nfw-picker__search" placeholder="제목 검색…" value={pickerQ}
-              onChange={e => setPickerQ(e.target.value)} autoFocus />
-            <button className="nfw-btn nfw-btn--sm" onClick={() => setPickerOpen(false)}>✕</button>
-          </div>
-          <ul className="nfw-picker__list">
-            {filtered.length === 0 && <li className="nfw-picker__empty">글이 없거나 WP 로그인 필요</li>}
-            {filtered.map(p => (
-              <li key={p.id} className="nfw-picker__item">
-                <button className="nfw-picker__btn" onClick={() => loadPost(p)}>
-                  <span className="nfw-picker__title">{p.title.rendered.replace(/<[^>]+>/g, '')}</span>
-                  <span className={`nfw-picker__status nfw-picker__status--${p.status}`}>{p.status}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <PostLoadPanel
+          categories={categories}
+          hasEditorContent={hasEditorContent}
+          onClearEditor={clearEditorForLoad}
+          onApply={applyLoadedPost}
+          onClose={() => setPickerOpen(false)}
+        />
       )}
 
-      {/* ── 교정(초안) 탭 ── */}
-      {tab === 'correct' && (
+      {phase === 'finalize' && (
         <div className="nfw-draft__body">
-          {/* 버전 히스토리 */}
           {versions.length > 0 && (
             <div className="nfw-versions">
               <span className="nfw-versions__label">버전</span>
               {versions.map((v, i) => (
-                <button key={i} className="nfw-versions__item"
-                  onClick={() => setDraft(d => ({ ...d, body: v }))} title={v.slice(0, 60)}>
+                <button
+                  key={i}
+                  type="button"
+                  className="nfw-versions__item"
+                  onClick={() => setDraft(d => ({ ...d, body: v }))}
+                  title={v.slice(0, 60)}
+                >
                   v{versions.length - i}
                 </button>
               ))}
             </div>
           )}
 
-          {/* 메타 필드: 카테고리·제목·요약 — 3단 한 줄 */}
           <div className="nfw-fields-row">
-            <label className="nfw-field">
-              <span className="nfw-field__label">카테고리</span>
-              <select className="nfw-field__input"
-                value={draft.categoryId}
-                onChange={e => setDraft(d => ({ ...d, categoryId: Number(e.target.value) }))}>
-                <option value={0}>— 선택 —</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </label>
-            <label className="nfw-field">
-              <span className="nfw-field__label">제목</span>
-              <input className="nfw-field__input" placeholder="제목 입력…"
-                value={draft.title}
-                onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} />
-            </label>
-            <label className="nfw-field">
-              <span className="nfw-field__label">요약</span>
-              <input className="nfw-field__input" placeholder="요약 입력…"
-                value={draft.excerpt}
-                onChange={e => setDraft(d => ({ ...d, excerpt: e.target.value }))} />
-            </label>
+            <div className="nfw-fields-row__pair">
+              <label className="nfw-field nfw-field--cat">
+                <span className="nfw-field__label">카테고리</span>
+                <select
+                  className="nfw-field__input"
+                  value={draft.categorySlug}
+                  onChange={e => setDraft(d => ({ ...d, categorySlug: e.target.value }))}
+                >
+                  <option value="">— 선택 —</option>
+                  {categories.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                </select>
+              </label>
+              <label className="nfw-field nfw-field--title">
+                <span className="nfw-field__label">제목</span>
+                <input
+                  className="nfw-field__input nfw-content-text"
+                  placeholder="제목 입력…"
+                  value={draft.title}
+                  onChange={e => setDraft(d => ({ ...d, title: e.target.value }))}
+                />
+              </label>
+            </div>
+            <div className="nfw-fields-row__summary">
+              <label className="nfw-field nfw-field--excerpt">
+                <span className="nfw-field__label">요약</span>
+                <input
+                  className="nfw-field__input nfw-content-text"
+                  placeholder="요약 입력…"
+                  value={draft.excerpt}
+                  onChange={e => setDraft(d => ({ ...d, excerpt: e.target.value }))}
+                />
+              </label>
+              <div className="nfw-field nfw-field--img-grid">
+                <span className="nfw-field__label">이미지 미리보기</span>
+                <ImagePreviewGrid
+                  images={draft.previewImages}
+                  loading={previewLoading}
+                  onRemove={onRemovePreviewImage}
+                  onPasteToBody={pastePreviewToBody}
+                />
+              </div>
+            </div>
           </div>
 
-          {/* 본문 — 라벨 우측에 이미지 삽입 바 */}
-          <label className="nfw-field nfw-field--body">
+          <div className="nfw-field nfw-field--body">
             <div className="nfw-field__body-header">
               <span className="nfw-field__label">본문</span>
-              {/* 이미지 삽입 바 — 본문 라벨 우측 */}
               {inlineImgs.length > 0 && (
                 <div className="nfw-insert-bar">
                   <span className="nfw-insert-bar__label">📍 커서 삽입:</span>
                   {inlineImgs.map(img => (
-                    <button key={img.id} className="nfw-insert-bar__btn"
-                      onClick={() => insertImageAtCursor(img.url, img.alt)}>
+                    <button
+                      key={img.id}
+                      type="button"
+                      className="nfw-insert-bar__btn"
+                      onClick={() => insertImageAtCursor(img.url, img.alt)}
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={img.url} alt={img.alt} width={28} height={20}
-                        style={{ objectFit: 'cover', borderRadius: 3 }} />
+                      <img src={img.url} alt={img.alt} width={28} height={20} style={{ objectFit: 'cover', borderRadius: 3 }} />
                       삽입
                     </button>
                   ))}
                 </div>
               )}
             </div>
-            <textarea
+            <BodyEditor
               ref={bodyRef}
-              className="nfw-field__textarea"
-              placeholder="본문을 입력하세요… (사진·이미지 탭에서 이미지 삽입 가능)"
-              value={draft.body}
-              onChange={e => setDraft(d => ({ ...d, body: e.target.value }))}
-              spellCheck
+              body={draft.body}
+              bodyRevision={draft.bodyRevision}
+              bodySnapshots={draft.bodySnapshots}
+              viewingRevision={draft.viewingRevision}
+              onSelectRevision={onSelectBodyRevision}
+              onChange={onBodyChange}
+              placeholder="본문을 입력하세요… (좌측 AI 명령 → 우측 본문 즉시 반영)"
             />
-          </label>
+          </div>
 
-          {/* 삽입된 이미지 스트립 */}
           {draft.images.length > 0 && (
             <div className="nfw-img-strip">
               <span className="nfw-img-strip__label">📎 삽입 ({draft.images.length})</span>
@@ -218,8 +313,11 @@ export function DraftPanel({
                     <span className="nfw-img-thumb__pos">
                       {{ top: '상단', inline: '커서', bottom: '하단' }[img.position]}
                     </span>
-                    <button className="nfw-img-thumb__del"
-                      onClick={() => setDraft(d => ({ ...d, images: d.images.filter(x => x.id !== img.id) }))}>
+                    <button
+                      type="button"
+                      className="nfw-img-thumb__del"
+                      onClick={() => setDraft(d => ({ ...d, images: d.images.filter(x => x.id !== img.id) }))}
+                    >
                       ✕
                     </button>
                   </div>
@@ -230,45 +328,32 @@ export function DraftPanel({
         </div>
       )}
 
-      {/* ── 배포 탭 ── */}
-      {tab === 'publish' && (
+      {phase === 'preview' && (
         <div className="nfw-draft__body nfw-draft__body--publish">
           <div className="nfw-publish-meta">
             <div className="nfw-publish-meta__row"><span>제목</span><strong>{draft.title || '—'}</strong></div>
             <div className="nfw-publish-meta__row"><span>카테고리</span><strong>{catName}</strong></div>
             <div className="nfw-publish-meta__row"><span>요약</span><strong>{draft.excerpt || '—'}</strong></div>
             <div className="nfw-publish-meta__row"><span>이미지</span><strong>{draft.images.length}개</strong></div>
-            <div className="nfw-publish-meta__row"><span>글자</span><strong>{draft.body.length}자</strong></div>
+            <div className="nfw-publish-meta__row"><span>글자</span><strong>{stripBodyPlain(draft.body).length}자</strong></div>
             {draft.postId && <div className="nfw-publish-meta__row"><span>포스트 ID</span><strong>#{draft.postId}</strong></div>}
           </div>
 
-          {/* 미리보기 */}
           <div className="nfw-preview">
             <h3 className="nfw-preview__title">{draft.title || '제목 없음'}</h3>
             {draft.excerpt && <p className="nfw-preview__excerpt">{draft.excerpt}</p>}
-            {/* 상단 이미지 */}
             {draft.images.filter(i => i.position === 'top').map(img => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={img.id} src={img.url} alt={img.alt}
-                style={{ maxWidth: '100%', borderRadius: 8, marginBottom: '0.75rem' }} />
+              <img key={img.id} src={img.url} alt={img.alt} style={{ maxWidth: '100%', borderRadius: 8, marginBottom: '0.75rem' }} />
             ))}
-            <div className="nfw-preview__body"
-              dangerouslySetInnerHTML={{ __html: draft.body.replace(/\n/g, '<br>').replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:6px;margin:0.5rem 0;" />') }}
+            <div
+              className="nfw-preview__body nfw-preview__body--final"
+              dangerouslySetInnerHTML={{ __html: bodyHtmlForPreview(draft.body) }}
             />
-            {/* 하단 이미지 */}
             {draft.images.filter(i => i.position === 'bottom').map(img => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={img.id} src={img.url} alt={img.alt}
-                style={{ maxWidth: '100%', borderRadius: 8, marginTop: '0.75rem' }} />
+              <img key={img.id} src={img.url} alt={img.alt} style={{ maxWidth: '100%', borderRadius: 8, marginTop: '0.75rem' }} />
             ))}
-          </div>
-
-          <div className="nfw-publish-actions">
-            <button className="nfw-btn nfw-btn--ghost" onClick={onBackToCorrect}>⬅ 재교정 (초안으로)</button>
-            <button className="nfw-btn nfw-btn--sm" onClick={onSave}>임시저장</button>
-            <button className="nfw-btn nfw-btn--primary nfw-btn--lg" onClick={onPublish}>
-              🚀 {draft.postId ? '업데이트 게시' : '새 글 게시'}
-            </button>
           </div>
         </div>
       )}

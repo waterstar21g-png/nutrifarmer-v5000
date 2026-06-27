@@ -5,27 +5,47 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:clean": "node scripts/clean-build.mjs",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "media:migrate-wp": "node scripts/migrate-wp-images-to-r2.mjs",
+    "posts:migrate-wp": "node scripts/v5000-migrate-from-wp.mjs",
+    "users:migrate-wp": "node scripts/v5000-migrate-users-from-wp.mjs",
+    "db:status": "node scripts/_db-status.mjs",
+    "r2:retry-missing": "node scripts/r2-retry-missing.mjs",
+    "r2:backfill-hosts": "node scripts/r2-backfill-host-aliases.mjs",
+    "r2:rotate": "node scripts/rotate-r2-keys.mjs",
+    "r2:apply": "node scripts/apply-r2-keys.mjs",
+    "setup:db": "node scripts/setup-v5000-db.mjs"
   },
   "dependencies": {
+    "@vercel/blob": "^1.1.1",
+    "@aws-sdk/client-s3": "^3.830.0",
+    "@neondatabase/serverless": "^1.1.0",
+    "@radix-ui/react-slot": "^1.2.3",
+    "bcryptjs": "^3.0.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.2",
+    "lucide-react": "^0.511.0",
     "next": "^15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.6.0",
-    "lucide-react": "^0.511.0",
-    "@radix-ui/react-slot": "^1.2.3"
+    "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "typescript": "^5",
-    "tailwindcss": "^4",
-    "@tailwindcss/postcss": "^4",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
-    "eslint-config-next": "^15.3.3"
+    "eslint-config-next": "^15.3.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

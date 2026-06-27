@@ -12,7 +12,13 @@ alwaysApply: true
 - **GitHub**: https://github.com/waterstar21g-png/nutrifarmer-v5000
 - **배포 URL**: https://nutrifarmer-v5000.vercel.app
 - **원본 참조**: https://www.nutrifarmer.kr/
-- **기술 스택**: Next.js 15 + TypeScript + Tailwind CSS + Vercel
+- **기술 스택**: Next.js 15 + TypeScript + Tailwind CSS + Vercel + **Vercel Postgres** + Cloudflare R2
+
+## 배포 정책 (필수 — 사용자 지시 2026-06-21)
+- **코드 변경 작업이 끝나면 사용자에게 묻지 말고 자동 배포**
+- 순서: `npm run build` 성공 확인 → `vercel --prod --yes` 실행 → 배포 URL·배포 ID 보고
+- **예외**: 사용자가 "배포하지 마" / "로컬만" 등으로 명시한 경우, 또는 빌드 실패 시
+- **커밋**: 사용자가 요청할 때만 (배포와 별개)
 
 ## 배포 명령
 ```powershell
@@ -20,9 +26,19 @@ cd "D:/함께온라인/My_BLOG/nutrifarmer-v5000"
 vercel --prod --yes
 ```
 
-## 현재 상태 (2026-06-21 기준)
-- SiteHeader nav 8개 카테고리 수정 완료 → **배포 유보 중**
+## 현재 상태 (2026-06-24 기준)
+- v2.5 UI (nav 8, Hero, Write 에디터) → **배포 완료**
+- **진행 중 (v3.0):** V5000 Native Platform — **무 WordPress** (REST·인증·게시 전부 V5000)
+- **확정 spec:** `docs/V5000-native-platform-spec.md`
 - CHANGELOG: `docs/CHANGELOG.md` 참조
+
+## V5000 Native Platform — 확정 결정 (2026-06-24)
+- **DB:** Vercel Postgres (사용자·글·메타)
+- **스토리지:** Cloudflare R2 (미디어)
+- **WordPress:** 사용 안 함 — WP REST·브릿지·Docker **금지**
+- **회원가입:** 공개 가입 (`/login` register 패널 V5000 내장)
+- **WP 계정 이전:** 강제 비밀번호 재설정 (WP 해시 이전 없음)
+- **v4000/v3000:** 참고·마이그레이션 소스만 — 코드·env 혼용 금지
 
 ## 핵심 설계 원칙
 - **단일 진실의 원천**: 카테고리/섹션 데이터는 `lib/site-data.ts` 한 곳에서 관리
@@ -43,17 +59,18 @@ vercel --prod --yes
 |------|------|
 | `app/globals.css` | 전역 CSS (--nf-* 변수 체계) |
 | `lib/site-data.ts` | 카테고리/섹션 고정 데이터 |
-| `lib/wordpress.ts` | WP REST API 함수 |
+| `lib/wordpress.ts` | ⚠️ **제거 예정** — v3.0에서 `lib/v5000-content.ts` 로 대체 |
+| `docs/V5000-native-platform-spec.md` | Native Platform 확정 spec |
 | `components/SiteHeader.tsx` | 상단 네비게이션 |
 | `components/HeroSlider.tsx` | 드래그 슬라이더 |
 | `components/StatsSection.tsx` | 통계 카운터 |
 | `components/write/WriteEditor.tsx` | AI 글쓰기 에디터 |
 | `app/write/write.css` | 에디터 전용 스타일 |
 
-## WordPress 연동 범위
-- **필수**: 글·이미지 데이터 소스 (REST API)
-- **선택**: 게시/수정 (로그인 필요, 실패 시 localStorage 폴백)
-- **AI**: WP API 실패 시 로컬 시뮬레이션 자동 전환
+## WordPress — 사용 안 함 (v3.0)
+- **런타임:** WP REST·WP auth·`/api/wp/*` **신규 코드 금지**, 제거 진행
+- **마이그레이션:** 1회 export 스크립트만 허용 (`scripts/v5000-migrate-from-wp.ts` 예정)
+- **과도기:** localStorage 초안·로컬 AI 시뮬레이션은 유지 가능 (WP 폴백 아님)
 
 ## 코딩 규칙
 - 컴포넌트 파일: 50~200줄 유지, 기능별 분리

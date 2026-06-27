@@ -53,7 +53,7 @@ export function VideoTab({ onInsert }: Props) {
           disabled={!url}
           onClick={() => onInsert(url, title || url)}
         >
-          초안에 등록
+          글쓰기-완성 커서 위치에 추가
         </button>
       </div>
     </div>
