@@ -17,6 +17,7 @@
     "db:status": "node scripts/_db-status.mjs",
     "r2:retry-missing": "node scripts/r2-retry-missing.mjs",
     "r2:backfill-hosts": "node scripts/r2-backfill-host-aliases.mjs",
+    "r2:revoke-old": "node scripts/revoke-old-r2-token.mjs",
     "r2:rotate": "node scripts/rotate-r2-keys.mjs",
     "r2:apply": "node scripts/apply-r2-keys.mjs",
     "setup:db": "node scripts/setup-v5000-db.mjs"
