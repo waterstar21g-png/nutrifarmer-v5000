@@ -1,8 +1,10 @@
 /* ══════════════════════════════════════════════
    NFW Write Editor — 전용 스타일 v2
+   /write 전체 글자 60% 확대 (현재 × 1.6) — 라벨·버튼·입력·본문 포함
 ══════════════════════════════════════════════ */
 html {
-  font-size: 70%;
+  --nfw-font-scale: 1.6;
+  font-size: calc(70% * var(--nfw-font-scale));
 }
 .nfw-app {
   display: flex;
@@ -10,7 +12,7 @@ html {
   height: 100dvh;
   background: #f0f4f8;
   font-family: var(--font-noto, 'Noto Sans KR', sans-serif);
-  font-size: calc(14px * 0.7);
+  font-size: calc(14px * 0.7 * var(--nfw-font-scale));
   /* 본문·글쓰기 — 좌·우 본문 2배, 굵고 선명 */
   --nfw-fs-body: calc(0.32rem * 2);
   --nfw-fs-body-sm: calc(0.272rem * 2);
