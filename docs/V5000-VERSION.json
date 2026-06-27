@@ -7,10 +7,10 @@
   },
   "version": "5.0.0.1",
   "label": "V5.0.0.1",
-  "commit": "bc070b5",
-  "commitFull": "bc070b5",
-  "deploymentId": "dpl_GpHbEsqCA9YrnQEnihessaq2HWty",
+  "commit": "e9f5553",
+  "commitFeature": "bc070b5",
+  "deploymentId": "dpl_DytCkpsA3jCxzeGa6VBa6JbHpUeH",
   "www": "https://www.nutrifarmer.kr/",
   "summary": "Write editor all text +60% (×1.6)",
-  "updatedAt": "2026-06-28T02:00:00+09:00"
+  "updatedAt": "2026-06-28T02:10:00+09:00"
 }
