@@ -15,7 +15,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'media.nutrifarmer.kr', pathname: '/**' },
       { protocol: 'https', hostname: '*.r2.cloudflarestorage.com', pathname: '/**' },
       { protocol: 'https', hostname: '*.public.blob.vercel-storage.com', pathname: '/**' },
-      { protocol: 'https', hostname: 'upload.wikimedia.org', pathname: '/**' },
+      { protocol: 'https', hostname: 'www.nutrifarmer.kr', pathname: '/api/v5000/files/**' },
+      { protocol: 'https', hostname: 'nutrifarmer.kr', pathname: '/api/v5000/files/**' },
+      { protocol: 'https', hostname: 'encrypted-tbn0.gstatic.com', pathname: '/**' },
     ],
   },
 };

@@ -18,8 +18,9 @@ export function mailerConfigured(): boolean {
 
 export async function sendAccountHintEmail(opts: {
   to: string;
-  displayName: string;
-  loginId: string;
+  displayName?: string;
+  loginId?: string;
+  accounts?: { displayName: string; loginId: string }[];
 }): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
   if (!key) return false;
@@ -28,13 +29,41 @@ export async function sendAccountHintEmail(opts: {
     ? `${process.env.NEXT_PUBLIC_SITE_URL}/login`
     : 'https://nutrifarmer-v5000.vercel.app/login';
 
+  const accounts =
+    opts.accounts ??
+    (opts.displayName && opts.loginId
+      ? [{ displayName: opts.displayName, loginId: opts.loginId }]
+      : []);
+
+  const accountLines =
+    accounts.length > 1
+      ? [
+          `등록된 계정 ${accounts.length}개:`,
+          ...accounts.map(
+            (a, i) => `  ${i + 1}. 이름·별명: ${a.displayName}  /  로그인 ID: ${a.loginId}`,
+          ),
+          '',
+          '로그인 시 위 로그인 ID 중 하나를 입력해 주세요.',
+        ]
+      : accounts[0]
+        ? [
+            `· 이름·별명: ${accounts[0].displayName}`,
+            `· 로그인 ID: ${accounts[0].loginId}`,
+          ]
+        : [];
+
+  const greeting =
+    accounts.length === 1
+      ? `안녕하세요, ${accounts[0].displayName}님.`
+      : '안녕하세요.';
+
   const text = [
-    `안녕하세요, ${opts.displayName}님.`,
+    greeting,
     '',
     '요청하신 로그인 정보입니다.',
     '',
-    `· 이름·별명: ${opts.displayName}`,
-    `· 로그인 ID: ${opts.loginId}`,
+    ...accountLines,
+    '',
     `· 이메일: ${opts.to}`,
     '',
     `로그인: ${loginUrl}`,

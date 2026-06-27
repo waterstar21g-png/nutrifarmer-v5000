@@ -1,3 +1,5 @@
+import { clampMediaFontSize, mediaCaptionStyle, MEDIA_FONT_SIZE_DEFAULT } from '@/lib/media-font-size';
+
 export const DEFAULT_BODY_IMG_WIDTH = 320;
 export const MIN_BODY_IMG_WIDTH = 80;
 export const MAX_BODY_IMG_WIDTH = 900;
@@ -8,6 +10,10 @@ export function clampBodyImgWidth(px: number): number {
 
 function escAttr(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function escHtml(s: string): string {
+  return escAttr(s).replace(/\n/g, ' ');
 }
 
 function parseFigureBlock(fig: string): { w: number; src: string; alt: string } | null {
@@ -32,19 +38,28 @@ export function buildBodyImageFigureHtml(
   url: string,
   alt: string,
   widthPx = DEFAULT_BODY_IMG_WIDTH,
+  descFontSize = MEDIA_FONT_SIZE_DEFAULT,
 ): string {
   const w = clampBodyImgWidth(widthPx);
   const safeUrl = escAttr(url.trim());
   const safeAlt = escAttr((alt || '이미지').slice(0, 100));
+  const fs = clampMediaFontSize(descFontSize);
+  const captionText = (alt || '').trim();
+  const caption =
+    captionText && captionText !== '이미지'
+      ? `<p class="nfw-body-img__caption nfw-body-block__caption" style="${mediaCaptionStyle(fs)}" data-nf-fs="${fs}">${escHtml(captionText)}</p>`
+      : '';
   return (
-    `<figure class="nfw-body-img" contenteditable="false" data-nfw-img="1" data-width="${w}" style="width:${w}px">` +
+    `<figure class="nfw-body-img" contenteditable="false" data-nfw-embed="image" data-nfw-img="1" data-width="${w}" style="width:${w}px">` +
     `<div class="nfw-body-img__bar">` +
-    `<input type="number" class="nfw-body-img__width-in" min="${MIN_BODY_IMG_WIDTH}" max="${MAX_BODY_IMG_WIDTH}" value="${w}" aria-label="이미지 너비(px)" />` +
+    `<span class="nfw-body-img__drag nfw-body-block__drag" title="드래그하여 이동" aria-label="드래그하여 이동">⋮⋮</span>` +
+    `<input type="number" class="nfw-body-img__width-in nfw-body-block__width-in" min="${MIN_BODY_IMG_WIDTH}" max="${MAX_BODY_IMG_WIDTH}" value="${w}" aria-label="이미지 너비(px)" />` +
     `<span class="nfw-body-img__unit">px</span>` +
-    `<button type="button" class="nfw-body-img__del" aria-label="이미지 삭제">삭제</button>` +
+    `<button type="button" class="nfw-body-img__del nfw-body-block__del" aria-label="이미지 삭제">삭제</button>` +
     `</div>` +
     `<img src="${safeUrl}" alt="${safeAlt}" draggable="false" />` +
-    `<span class="nfw-body-img__resize" aria-hidden="true"></span>` +
+    caption +
+    `<span class="nfw-body-img__resize nfw-body-block__resize" aria-hidden="true"></span>` +
     `</figure>`
   );
 }

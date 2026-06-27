@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSession, withDatabase } from '@/lib/v5000-content/api';
 import { listCategories } from '@/lib/v5000-content/categories';
-import { createPost, listPosts, toPostDto } from '@/lib/v5000-content/posts';
+import { createPost, listPosts, listPublishedByCategory, toPostDto } from '@/lib/v5000-content/posts';
 import { postErrorMessage, validatePostInput } from '@/lib/v5000-content/validate';
 
 export const dynamic = 'force-dynamic';
@@ -16,18 +16,27 @@ export async function GET(req: NextRequest) {
   const search = searchParams.get('search') ?? undefined;
   const titleSearch = searchParams.get('search_title') ?? undefined;
   const bodySearch = searchParams.get('search_body') ?? undefined;
-  const mineOnly = searchParams.get('mine') !== '0';
+  const includeAll = searchParams.get('mine') === '0';
+  const cat = categorySlug?.trim() || undefined;
+  const onlyCategory =
+    Boolean(cat) &&
+    !titleSearch?.trim() &&
+    !bodySearch?.trim() &&
+    !search?.trim() &&
+    (!status || status === 'publish');
 
   const result = await withDatabase(async () => {
-    const rows = await listPosts({
-      authorId: mineOnly || session.role !== 'admin' ? session.userId : undefined,
-      categorySlug,
-      status,
-      search,
-      titleSearch,
-      bodySearch,
-      limit: 100,
-    });
+    const rows = onlyCategory
+      ? await listPublishedByCategory(cat!, 100)
+      : await listPosts({
+          authorId: includeAll ? undefined : session.userId,
+          categorySlug: cat,
+          status,
+          search,
+          titleSearch,
+          bodySearch,
+          limit: 100,
+        });
     return NextResponse.json({
       ok: true,
       posts: rows.map(toPostDto),

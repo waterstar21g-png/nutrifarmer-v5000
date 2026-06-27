@@ -14,4 +14,5 @@ export interface V5000PostDto {
   link: string;
   publishedAt: string | null;
   updatedAt: string;
+  authorDisplayName: string | null;
 }

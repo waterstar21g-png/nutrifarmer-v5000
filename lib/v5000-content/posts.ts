@@ -1,6 +1,7 @@
-import { and, desc, eq, ilike, ne, or, sql } from 'drizzle-orm';
+import { and, desc, eq, getTableColumns, ilike, ne, or, sql } from 'drizzle-orm';
 import { getDb } from '@/lib/v5000-auth/db';
 import { SITE_URL } from '@/lib/v5000-auth/config';
+import { v5000Users } from '@/lib/v5000-auth/schema';
 import { v5000Posts, type V5000PostRow } from './schema';
 import { slugify, uniqueSlug } from './slug';
 import type { V5000PostDto } from './types';
@@ -9,7 +10,9 @@ export function postLink(categorySlug: string, slug: string): string {
   return `${SITE_URL}/${categorySlug}/${slug}`;
 }
 
-export function toPostDto(row: V5000PostRow): V5000PostDto {
+export type V5000PostWithAuthor = V5000PostRow & { authorDisplayName?: string | null };
+
+export function toPostDto(row: V5000PostWithAuthor): V5000PostDto {
   return {
     id: row.id,
     slug: row.slug,
@@ -21,6 +24,7 @@ export function toPostDto(row: V5000PostRow): V5000PostDto {
     link: postLink(row.categorySlug, row.slug),
     publishedAt: row.publishedAt?.toISOString() ?? null,
     updatedAt: row.updatedAt.toISOString(),
+    authorDisplayName: row.authorDisplayName ?? null,
   };
 }
 
@@ -45,6 +49,7 @@ export async function findPublishedPostBySlug(slug: string): Promise<V5000PostRo
     .select()
     .from(v5000Posts)
     .where(and(eq(v5000Posts.slug, slug), eq(v5000Posts.status, 'publish')))
+    .orderBy(desc(v5000Posts.publishedAt), desc(v5000Posts.updatedAt))
     .limit(1);
   return rows[0] ?? null;
 }
@@ -77,7 +82,7 @@ export async function listPosts(opts: {
   titleSearch?: string;
   bodySearch?: string;
   limit?: number;
-}): Promise<V5000PostRow[]> {
+}): Promise<V5000PostWithAuthor[]> {
   const db = getDb();
   const limit = Math.min(opts.limit ?? 30, 100);
   const filters = [];
@@ -87,9 +92,12 @@ export async function listPosts(opts: {
   if (opts.status) filters.push(eq(v5000Posts.status, opts.status));
   if (opts.titleSearch?.trim()) {
     filters.push(ilike(v5000Posts.title, `%${opts.titleSearch.trim()}%`));
-  } else if (opts.bodySearch?.trim()) {
-    filters.push(ilike(v5000Posts.body, `%${opts.bodySearch.trim()}%`));
-  } else if (opts.search?.trim()) {
+  }
+  if (opts.bodySearch?.trim()) {
+    const q = `%${opts.bodySearch.trim()}%`;
+    filters.push(or(ilike(v5000Posts.excerpt, q), ilike(v5000Posts.body, q))!);
+  }
+  if (opts.search?.trim()) {
     const q = `%${opts.search.trim()}%`;
     filters.push(or(ilike(v5000Posts.title, q), ilike(v5000Posts.excerpt, q))!);
   }
@@ -97,10 +105,14 @@ export async function listPosts(opts: {
   const where = filters.length ? and(...filters) : undefined;
 
   return db
-    .select()
+    .select({
+      ...getTableColumns(v5000Posts),
+      authorDisplayName: v5000Users.displayName,
+    })
     .from(v5000Posts)
+    .innerJoin(v5000Users, eq(v5000Posts.authorId, v5000Users.id))
     .where(where)
-    .orderBy(desc(v5000Posts.updatedAt))
+    .orderBy(desc(v5000Posts.publishedAt), desc(v5000Posts.updatedAt))
     .limit(limit);
 }
 
@@ -192,6 +204,15 @@ export async function countPublishedPosts(): Promise<number> {
     .select({ count: sql<number>`count(*)::int` })
     .from(v5000Posts)
     .where(eq(v5000Posts.status, 'publish'));
+  return rows[0]?.count ?? 0;
+}
+
+export async function countPublishedPostsByAuthor(authorId: number): Promise<number> {
+  const db = getDb();
+  const rows = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(v5000Posts)
+    .where(and(eq(v5000Posts.authorId, authorId), eq(v5000Posts.status, 'publish')));
   return rows[0]?.count ?? 0;
 }
 

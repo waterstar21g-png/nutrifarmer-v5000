@@ -4,7 +4,7 @@ import { getDb } from './db';
 import { v5000PasswordResets } from './schema';
 import { RESET_CODE_TTL_MS, RESET_MAX_ATTEMPTS, SITE_URL } from './config';
 import { sendAccountHintEmail, sendResetCodeEmail } from '@/lib/mailer';
-import { findUserByEmail, lookupUsersByLogin, formatPickUser } from './users';
+import { findUsersByEmail, lookupUsersByLogin, formatPickUser } from './users';
 import { maskEmail } from './validate';
 
 function sha256(value: string): string {
@@ -12,15 +12,14 @@ function sha256(value: string): string {
 }
 
 export async function sendFindAccountEmail(email: string): Promise<{ ok: boolean; code?: string }> {
-  const user = await findUserByEmail(email);
-  if (!user) {
+  const users = await findUsersByEmail(email);
+  if (!users.length) {
     return { ok: true };
   }
 
   const sent = await sendAccountHintEmail({
-    to: user.email,
-    displayName: user.displayName,
-    loginId: user.loginId,
+    to: users[0].email,
+    accounts: users.map(u => ({ displayName: u.displayName, loginId: u.loginId })),
   });
 
   if (!sent) return { ok: false, code: 'mail_failed' };

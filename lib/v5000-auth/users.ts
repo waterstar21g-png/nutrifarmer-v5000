@@ -2,6 +2,7 @@ import { and, eq, ilike, or, sql } from 'drizzle-orm';
 import { getDb } from './db';
 import { v5000Users, type V5000User } from './schema';
 import { hashPassword } from './password';
+import { getEmailRegistrationLimit, normalizeEmail } from './email-policy';
 import { validateLoginId, isValidEmail, maskEmail } from './validate';
 
 export interface PickUser {
@@ -36,14 +37,26 @@ export async function findUserByLoginId(loginId: string): Promise<V5000User | nu
   return rows[0] ?? null;
 }
 
-export async function findUserByEmail(email: string): Promise<V5000User | null> {
+export async function findUsersByEmail(email: string): Promise<V5000User[]> {
   const db = getDb();
-  const rows = await db
+  return db
     .select()
     .from(v5000Users)
-    .where(sql`lower(${v5000Users.email}) = lower(${email.trim()})`)
-    .limit(1);
+    .where(sql`lower(${v5000Users.email}) = lower(${normalizeEmail(email)})`);
+}
+
+export async function findUserByEmail(email: string): Promise<V5000User | null> {
+  const rows = await findUsersByEmail(email);
   return rows[0] ?? null;
+}
+
+export async function countUsersByEmail(email: string): Promise<number> {
+  const db = getDb();
+  const rows = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(v5000Users)
+    .where(sql`lower(${v5000Users.email}) = lower(${normalizeEmail(email)})`);
+  return rows[0]?.count ?? 0;
 }
 
 export async function lookupUsersByLogin(raw: string): Promise<{
@@ -56,8 +69,9 @@ export async function lookupUsersByLogin(raw: string): Promise<{
   const db = getDb();
 
   if (login.includes('@')) {
-    const user = await findUserByEmail(login);
-    if (user) return { status: 'found', users: [user] };
+    const users = await findUsersByEmail(login);
+    if (users.length === 1) return { status: 'found', users };
+    if (users.length > 1) return { status: 'ambiguous', users };
     return { status: 'not_found', users: [] };
   }
 
@@ -95,9 +109,22 @@ export async function isLoginIdTaken(loginId: string): Promise<boolean> {
   return !!user;
 }
 
+export async function checkEmailRegistration(
+  email: string,
+): Promise<{ ok: true } | { ok: false; code: 'email_exists' | 'email_limit' }> {
+  const normalized = normalizeEmail(email);
+  const count = await countUsersByEmail(normalized);
+  const limit = getEmailRegistrationLimit(normalized);
+  if (count >= limit) {
+    return { ok: false, code: limit > 1 ? 'email_limit' : 'email_exists' };
+  }
+  return { ok: true };
+}
+
+/** @deprecated checkEmailRegistration 사용 */
 export async function isEmailTaken(email: string): Promise<boolean> {
-  const user = await findUserByEmail(email);
-  return !!user;
+  const check = await checkEmailRegistration(email);
+  return !check.ok;
 }
 
 export interface RegisterInput {
@@ -117,7 +144,7 @@ export async function createUser(input: RegisterInput): Promise<V5000User> {
     .values({
       loginId: input.loginId.trim(),
       displayName: input.displayName.trim(),
-      email: input.email.trim().toLowerCase(),
+      email: normalizeEmail(input.email),
       passwordHash,
       role: 'author',
       mustResetPassword: false,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { DraftState, InsertedImage } from './WriteEditor';
+import type { DraftState } from './WriteEditor';
 import { MEDIA_API } from './WriteEditor';
 import { PhotoTab } from './tabs/PhotoTab';
 import { VideoTab } from './tabs/VideoTab';
@@ -29,8 +29,9 @@ interface AiTurn {
 
 interface Props {
   draft: DraftState;
-  setDraft: React.Dispatch<React.SetStateAction<DraftState>>;
-  onInsertImage: (img: InsertedImage) => void;
+  onInsertImage: (payload: { url: string; alt: string; descFontSize: number }) => void;
+  onInsertVideo: (payload: { url: string; title: string; descFontSize: number }) => void;
+  onInsertFile: (payload: { url: string; name: string; descFontSize: number }) => void;
   onNewDraft: () => boolean | Promise<boolean>;
   onAiApply: (text: string, cmdId: AiCmdId) => void;
   onRecommendImages: () => Promise<string>;
@@ -59,7 +60,8 @@ function buildSideButtons(): SideBtn[] {
 }
 
 export function ChatPanel({
-  draft, setDraft, onInsertImage, onNewDraft, onAiApply, onRecommendImages, imageRecommendLoading,
+  draft, onInsertImage, onInsertVideo, onInsertFile,
+  onNewDraft, onAiApply, onRecommendImages, imageRecommendLoading,
 }: Props) {
   const [mode, setMode] = useState<MaterialMode>('write');
   const [turns, setTurns] = useState<AiTurn[]>([]);
@@ -164,17 +166,18 @@ export function ChatPanel({
 
   const startNewWrite = useCallback(async () => {
     const ok = await Promise.resolve(onNewDraft());
-    if (!ok) return;
     setMode('write');
     setShowInput(true);
-    setTurns([]);
-    setInput('');
+    if (ok) {
+      setTurns([]);
+      setInput('');
+    }
     requestAnimationFrame(() => promptRef.current?.focus());
   }, [onNewDraft]);
 
   const onMaterial = (m: MaterialMode) => {
     if (m === 'write') {
-      startNewWrite();
+      void startNewWrite();
       return;
     }
     setMode(m);
@@ -205,9 +208,12 @@ export function ChatPanel({
   return (
     <div className="nfw-chat">
       <div className="nfw-phase1-bar">
-        <button type="button" className={`nfw-phase1-btn nfw-phase1-btn--new${mode === 'write' ? ' is-active' : ''}`} onClick={startNewWrite}>
-          새글 쓰기
-        </button>
+        <div className="nfw-phase1-bar__lead">
+          <button type="button" className={`nfw-phase1-btn nfw-phase1-btn--new${mode === 'write' ? ' is-active' : ''}`} onClick={() => void startNewWrite()}>
+            새글 쓰기
+          </button>
+        </div>
+        <div className="nfw-phase1-bar__rest">
         <button type="button" className={`nfw-phase1-btn${mode === 'photo' ? ' is-active' : ''}`} onClick={() => onMaterial('photo')}>
           사진/이미지
         </button>
@@ -217,6 +223,7 @@ export function ChatPanel({
         <button type="button" className={`nfw-phase1-btn${mode === 'file' ? ' is-active' : ''}`} onClick={() => onMaterial('file')}>
           파일/자료
         </button>
+        </div>
       </div>
 
       <div className="nfw-phase2">
@@ -270,7 +277,17 @@ export function ChatPanel({
                       <button type="button" className="nfw-btn nfw-btn--primary nfw-btn--sm" disabled={aiLoading || !input.trim()} onClick={sendPrompt}>
                         전송 → 우측
                       </button>
-                      <button type="button" className="nfw-btn nfw-btn--sm" onClick={() => setInput('')}>지우기</button>
+                      <button
+                        type="button"
+                        className="nfw-btn nfw-btn--sm"
+                        disabled={turns.length === 0 && !aiLoading}
+                        onClick={() => {
+                          setTurns([]);
+                          if (logRef.current) logRef.current.scrollTop = 0;
+                        }}
+                      >
+                        지우기
+                      </button>
                     </div>
                   </div>
                   <div
@@ -306,19 +323,10 @@ export function ChatPanel({
             <PhotoTab onInsert={onInsertImage} draftBodyRef={null} mediaApiUrl={MEDIA_API} />
           )}
           {mode === 'video' && (
-            <VideoTab
-              onInsert={(url, title) =>
-                setDraft(d => ({ ...d, body: `${d.body}\n\n[동영상: ${title}](${url})\n` }))
-              }
-            />
+            <VideoTab onInsert={onInsertVideo} />
           )}
           {mode === 'file' && (
-            <FileTab
-              onInsert={(url, name) =>
-                setDraft(d => ({ ...d, body: `${d.body}\n\n[📎 ${name}](${url})\n` }))
-              }
-              mediaApiUrl={MEDIA_API}
-            />
+            <FileTab onInsert={onInsertFile} mediaApiUrl={MEDIA_API} />
           )}
         </div>
       </div>

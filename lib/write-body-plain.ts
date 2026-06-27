@@ -1,6 +1,6 @@
 /** 본문 HTML → AI·비교용 순수 텍스트 */
 
-import { bodyImagesToPublishHtml } from '@/lib/write-body-images';
+import { bodyBlocksToPublishHtml } from '@/lib/write-body-blocks';
 
 export function stripBodyPlain(html: string): string {
   if (!html) return '';
@@ -23,8 +23,8 @@ export function stripBodyForPublish(html: string): string {
   s = s.replace(/<del[^>]*>[\s\S]*?<\/del>/gi, '');
   s = s.replace(/<span class="nf-rev-\d+">([\s\S]*?)<\/span>/gi, '$1');
   s = s.replace(/<br\s*\/?>/gi, '\n');
-  const withImgs = bodyImagesToPublishHtml(s);
-  return stripBodyPlain(withImgs);
+  const withBlocks = bodyBlocksToPublishHtml(s);
+  return stripBodyPlain(withBlocks);
 }
 
 /** 게시·미리보기용 HTML — 이미지·줄바꿈 유지 */
@@ -34,11 +34,15 @@ export function bodyHtmlForPublish(html: string): string {
   s = s.replace(/<del[^>]*>[\s\S]*?<\/del>/gi, '');
   s = s.replace(/<span class="nf-rev-\d+">([\s\S]*?)<\/span>/gi, '$1');
   s = s.replace(/<div class="nfw-body-img__bar">[\s\S]*?<\/div>/gi, '');
+  s = s.replace(/<div class="nfw-body-block__bar">[\s\S]*?<\/div>/gi, '');
   s = s.replace(/<span class="nfw-body-img__resize"[^>]*>\s*<\/span>/gi, '');
-  s = bodyImagesToPublishHtml(s);
+  s = s.replace(/<span class="nfw-body-block__resize"[^>]*>\s*<\/span>/gi, '');
+  s = s.replace(/<span class="nfw-body-img__drag"[^>]*>[\s\S]*?<\/span>/gi, '');
+  s = s.replace(/<span class="nfw-body-block__drag"[^>]*>[\s\S]*?<\/span>/gi, '');
+  s = bodyBlocksToPublishHtml(s);
   s = s.replace(/<br\s*\/?>/gi, '<br>');
   const text = stripBodyPlain(s);
-  if (!text && !/<img\b/i.test(s)) return '';
+  if (!text && !/<(img|iframe)\b/i.test(s) && !/nfw-pub-video/i.test(s)) return '';
   return s.trim();
 }
 

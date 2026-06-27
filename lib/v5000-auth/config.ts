@@ -50,6 +50,7 @@ export const LOGIN_ERRORS: Record<string, string> = {
   weak_nickname: '별명은 2자 이상 입력해 주세요.',
   login_id_taken: '이미 사용 중인 로그인 ID입니다.',
   email_exists: '이미 가입된 이메일입니다. 로그인하거나 비밀번호 찾기를 이용해 주세요.',
+  email_limit: '이 이메일로는 최대 4명까지 가입할 수 있습니다. 로그인 ID로 구분해 로그인해 주세요.',
   not_found: '등록된 이름·별명·이메일을 찾을 수 없습니다.',
   ambiguous: '여러 계정이 검색되었습니다. 로그인할 ID를 선택해 주세요.',
   user_not_found: '사용자 ID가 없습니다. 확인 바랍니다 !',
@@ -71,6 +72,28 @@ export const LOGIN_ERRORS: Record<string, string> = {
 export function loginErrorMessage(code?: string): string {
   if (!code) return '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.';
   return LOGIN_ERRORS[code] ?? '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.';
+}
+
+/** UI 표시용 회원 등급 (게시글 수 + admin 역할) */
+export type MemberGrade = 'admin' | 'regular' | 'star';
+
+export function userMemberGrade(
+  role: string | null | undefined,
+  publishedPostCount = 0,
+): MemberGrade {
+  if (role === 'admin') return 'admin';
+  if (publishedPostCount >= 2) return 'regular';
+  return 'star';
+}
+
+export function userMemberGradeLabel(
+  role: string | null | undefined,
+  publishedPostCount = 0,
+): string {
+  const grade = userMemberGrade(role, publishedPostCount);
+  if (grade === 'admin') return '관리자';
+  if (grade === 'regular') return '일반회원';
+  return '샛별회원';
 }
 
 /** 로그인·가입 성공 후 기본 이동 경로 (redirect_to 없을 때) */

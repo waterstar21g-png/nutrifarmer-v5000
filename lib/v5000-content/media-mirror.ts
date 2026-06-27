@@ -69,10 +69,23 @@ export async function resolveMediaUrl(source: string): Promise<string> {
   return cdnUrlFromWp(norm) ?? source;
 }
 
-/** 동기 폴백 — CDN 경로 치환만 */
+/** V5000 파일 프록시·WP uploads → CDN (동기 폴백) */
 export function resolveMediaUrlSync(source: string): string {
   if (!source?.trim()) return '';
-  return cdnUrlFromWp(normalizeMediaUrl(source)) ?? source;
+  const trimmed = source.trim();
+  const norm = normalizeMediaUrl(trimmed.startsWith('/') ? `https://local${trimmed}` : trimmed);
+  const cdn = process.env.NEXT_PUBLIC_CDN_URL?.trim().replace(/\/$/, '');
+
+  const apiKey =
+    trimmed.match(/^\/api\/v5000\/files\/(.+)$/i)?.[1] ??
+    norm.match(/\/api\/v5000\/files\/(.+)$/i)?.[1];
+  if (apiKey && cdn) {
+    return `${cdn}/${decodeURIComponent(apiKey)}`;
+  }
+
+  if (trimmed.startsWith('/')) return trimmed;
+
+  return cdnUrlFromWp(norm) ?? source;
 }
 
 /** HTML 본문 내 WP 이미지 URL 일괄 치환 */

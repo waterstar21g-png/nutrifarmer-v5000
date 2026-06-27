@@ -9,6 +9,10 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 
+import { loadEnvFiles } from './_load-env.mjs';
+
+loadEnvFiles();
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ACCOUNT_ID = '95dd5f33425f492df96ded705730b9c8';
 const BUCKET = 'nutrifarmer-media';
@@ -26,6 +30,9 @@ function readCfApiTokens() {
   for (const p of paths) {
     if (!existsSync(p)) continue;
     for (const m of readFileSync(p, 'utf8').matchAll(/cfut_[A-Za-z0-9_-]+/g)) tokens.add(m[0]);
+  }
+  if (!tokens.size && process.env.CLOUDFLARE_API_TOKEN?.trim()) {
+    tokens.add(process.env.CLOUDFLARE_API_TOKEN.trim());
   }
   if (!tokens.size && process.env.CF_ADMIN_API_TOKEN?.trim()) {
     tokens.add(process.env.CF_ADMIN_API_TOKEN.trim());
@@ -130,6 +137,8 @@ async function main() {
     region: 'auto',
     endpoint: `https://${ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId, secretAccessKey },
+    requestChecksumCalculation: 'WHEN_REQUIRED',
+    responseChecksumValidation: 'WHEN_REQUIRED',
   });
   await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: 'uploads/2026/06/daily-1.jpg' }));
   console.log('R2 bucket access OK');

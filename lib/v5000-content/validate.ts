@@ -30,8 +30,9 @@ export const POST_ERRORS: Record<string, string> = {
   unauthorized: '로그인이 필요합니다.',
   r2_unconfigured: '파일 업로드 저장소가 설정되지 않았습니다. URL로 이미지를 삽입해 주세요.',
   file_too_large: '파일 크기는 15MB 이하여야 합니다.',
-  unsupported_type: '지원하지 않는 파일 형식입니다.',
+  unsupported_type: '지원하지 않는 파일 형식입니다. PDF, DOC/DOCX, HWP, XLS/XLSX, ZIP, TXT, MP4 등을 사용해 주세요.',
   missing_file: '업로드할 파일을 선택해 주세요.',
+  upload_failed: '파일 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.',
 };
 
 export function postErrorMessage(code?: string): string {

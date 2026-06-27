@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
+import { PostContentImage } from '@/components/PostContentImage';
 import { ALL_CATEGORY_SLUGS } from '@/lib/site-data';
 import {
   getCategoryGallery,
@@ -9,6 +9,7 @@ import {
   galleryItemToGrid,
 } from '@/lib/site-content';
 import { getSiteCategory } from '@/lib/v5000-content/public-posts';
+import { Suspense } from 'react';
 import { GalleryGrid } from '@/components/GalleryGrid';
 import { SidebarSearch } from '@/components/SidebarSearch';
 
@@ -69,13 +70,11 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <main className="nf-cat-single-main">
           <div className="nf-cat-single-hero">
             {firstImageUrl ? (
-              <Image
+              <PostContentImage
                 src={firstImageUrl}
                 alt={`${cat.name} 대표 이미지`}
                 fill
                 priority
-                sizes="(max-width: 900px) 100vw, 55vw"
-                style={{ objectFit: 'cover' }}
               />
             ) : (
               <div className="nf-cat-single-hero--empty">
@@ -89,12 +88,14 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           </p>
         </main>
 
-        <SidebarSearch
-          posts={sidebarPosts}
-          catSlug={category}
-          catName={cat.name}
-          currentSlug={items[0]?.post.slug ?? ''}
-        />
+        <Suspense fallback={null}>
+          <SidebarSearch
+            posts={sidebarPosts}
+            catSlug={category}
+            catName={cat.name}
+            currentSlug={items[0]?.post.slug ?? ''}
+          />
+        </Suspense>
       </div>
 
       <div className="nf-archive-shell">

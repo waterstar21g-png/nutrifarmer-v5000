@@ -9,7 +9,7 @@ import { withDatabase } from '@/lib/v5000-auth/api';
 import { encodeSession, sessionMaxAge } from '@/lib/v5000-auth/session';
 import {
   createUser,
-  isEmailTaken,
+  checkEmailRegistration,
   isLoginIdTaken,
   validateRegisterInput,
 } from '@/lib/v5000-auth/users';
@@ -60,12 +60,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (await isEmailTaken(validated.data.email)) {
+    const emailCheck = await checkEmailRegistration(validated.data.email);
+    if (!emailCheck.ok) {
       return NextResponse.json(
         {
           ok: false,
-          code: 'email_exists',
-          message: loginErrorMessage('email_exists'),
+          code: emailCheck.code,
+          message: loginErrorMessage(emailCheck.code),
           attempt: validated.data.displayName,
         },
         { status: 400 },

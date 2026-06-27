@@ -1,5 +1,6 @@
 import { SHOWCASE_CATS, ABOUT_ITEMS, FAMILY_ITEMS, type CatItem } from '@/lib/site-data';
 import type { PreviewPost } from '@/lib/home-posts';
+import { firstImageUrlFromHtml } from '@/lib/write-featured-image';
 import { resolveMediaUrlSync } from './media-mirror';
 import type { V5000PostRow } from './schema';
 
@@ -10,8 +11,8 @@ export function getSiteCategory(slug: string): CatItem | null {
 }
 
 export function firstImageFromBody(html: string): string | null {
-  const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-  return m?.[1] ? resolveMediaUrlSync(m[1]) : null;
+  const src = firstImageUrlFromHtml(html);
+  return src ? resolveMediaUrlSync(src) : null;
 }
 
 export function rowToPreviewPost(row: V5000PostRow, cat?: CatItem | null): PreviewPost {

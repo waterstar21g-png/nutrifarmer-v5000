@@ -10,6 +10,7 @@ import {
   rowToPreviewPost,
   firstImageFromBody,
 } from '@/lib/v5000-content/public-posts';
+import { rewriteHtmlMediaUrls } from '@/lib/v5000-content/media-mirror';
 import type { PreviewPost } from '@/lib/home-posts';
 import type { SitePostCard } from '@/lib/site-post-card';
 
@@ -57,13 +58,14 @@ function rowToSidebar(row: V5000PostRow): SidebarPostItem {
   };
 }
 
-function rowToGallery(row: V5000PostRow, categorySlug: string): GalleryItem {
+async function rowToGallery(row: V5000PostRow, categorySlug: string): Promise<GalleryItem> {
+  const body = await rewriteHtmlMediaUrls(row.body);
   return {
     key: `post-${row.id}`,
     post: rowToSitePostCard(row),
     categorySlug,
     categoryName: categoryName(categorySlug),
-    imageUrl: firstImageFromBody(row.body),
+    imageUrl: firstImageFromBody(body),
     pid: row.id,
   };
 }
@@ -82,7 +84,7 @@ export async function getCategoryGallery(
     () => ({ rows: [] as V5000PostRow[], total: 0, totalPages: 0 }),
   );
   return {
-    items: rows.map(row => rowToGallery(row, categorySlug)),
+    items: await Promise.all(rows.map(row => rowToGallery(row, categorySlug))),
     total,
     totalPages,
   };
@@ -97,7 +99,12 @@ export async function getPreviewPostsBySlugs(
     unique.map(async slug => {
       const rows = await listPublishedByCategory(slug, perPage).catch(() => []);
       const cat = getSiteCategory(slug);
-      const previews = rows.map(row => rowToPreviewPost(row, cat));
+      const previews = await Promise.all(
+        rows.map(async row => {
+          const body = await rewriteHtmlMediaUrls(row.body);
+          return rowToPreviewPost({ ...row, body }, cat);
+        }),
+      );
       return [slug, previews] as const;
     }),
   );

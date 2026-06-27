@@ -11,7 +11,7 @@ export const v5000Users = pgTable('v5000_users', {
   id: serial('id').primaryKey(),
   loginId: varchar('login_id', { length: 64 }).notNull().unique(),
   displayName: varchar('display_name', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
+  email: varchar('email', { length: 255 }).notNull(),
   passwordHash: varchar('password_hash', { length: 255 }),
   role: varchar('role', { length: 20 }).notNull().default('author'),
   mustResetPassword: boolean('must_reset_password').notNull().default(false),

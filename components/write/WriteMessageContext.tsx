@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useCallback, useContext, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface WriteMessagePayload {
   screen: string;
@@ -8,6 +9,8 @@ export interface WriteMessagePayload {
   guidance?: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  /** 새글쓰기 확인 — 모달 레이아웃(스크린 2) */
+  variant?: 'default' | 'new-draft';
 }
 
 export interface WriteMessageAPI {
@@ -67,13 +70,14 @@ export function WriteMessageProvider({ children }: { children: React.ReactNode }
   return (
     <WriteMessageContext.Provider value={{ alert, confirm }}>
       {children}
-      {pending && (
+      {pending && typeof document !== 'undefined' && createPortal(
         <WriteMessageDialog
           {...pending.payload}
           mode={pending.mode}
           onConfirm={() => close(true)}
           onCancel={() => close(false)}
-        />
+        />,
+        document.body,
       )}
     </WriteMessageContext.Provider>
   );
@@ -102,46 +106,96 @@ function WriteMessageDialog({
   guidance,
   confirmLabel = '확인',
   cancelLabel = '취소',
+  variant = 'default',
   mode,
   onConfirm,
   onCancel,
 }: DialogProps) {
+  const dismiss = mode === 'alert' ? onConfirm : onCancel;
+  useDialogEscape(dismiss);
+
+  if (variant === 'new-draft' && mode === 'confirm') {
+    return (
+      <div className="nfw-msg-backdrop nfw-msg-backdrop--modal" role="presentation" onClick={onCancel}>
+        <div
+          className="nfw-write-dialog nfw-write-dialog--modal nfw-write-dialog--new-draft"
+          role="alertdialog"
+          aria-labelledby="nfw-new-draft-title"
+          aria-describedby="nfw-new-draft-body"
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="nfw-modal__head">
+            <h2 id="nfw-new-draft-title" className="nfw-modal__title">{screen}</h2>
+          </div>
+          <div id="nfw-new-draft-body" className="nfw-modal__body">
+            <p className="nfw-modal__message">본문에 작성중인 글이 있습니다.</p>
+            <p className="nfw-modal__guide">
+              <span className="nfw-modal__highlight">새 글쓰기</span>
+              {' 를 시작할까요?'}
+            </p>
+          </div>
+          <div className="nfw-modal__actions">
+            <button type="button" className="nfw-modal__btn nfw-modal__btn--cancel" onClick={onCancel}>
+              {cancelLabel}
+            </button>
+            <button type="button" className="nfw-modal__btn nfw-modal__btn--confirm" onClick={onConfirm}>
+              {confirmLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="nfw-msg-backdrop" role="presentation" onClick={mode === 'alert' ? onConfirm : onCancel}>
+    <div
+      className="nfw-msg-backdrop nfw-msg-backdrop--modal"
+      role="presentation"
+      onClick={mode === 'alert' ? onConfirm : onCancel}
+    >
       <div
-        className="nfw-msg"
+        className="nfw-write-dialog nfw-write-dialog--modal"
         role="alertdialog"
-        aria-labelledby="nfw-msg-screen"
-        aria-describedby="nfw-msg-body"
+        aria-labelledby="nfw-modal-title"
+        aria-describedby="nfw-modal-body"
         onClick={e => e.stopPropagation()}
       >
-        <dl className="nfw-msg__grid">
-          <div className="nfw-msg__row">
-            <dt>화면</dt>
-            <dd id="nfw-msg-screen">{screen}</dd>
-          </div>
-          <div className="nfw-msg__row">
-            <dt>내용</dt>
-            <dd id="nfw-msg-body">{message}</dd>
-          </div>
-          {guidance && (
-            <div className="nfw-msg__row nfw-msg__row--guide">
-              <dt>조치</dt>
-              <dd>{guidance}</dd>
-            </div>
-          )}
-        </dl>
-        <div className="nfw-msg__actions">
+        <div className="nfw-modal__head">
+          <h2 id="nfw-modal-title" className="nfw-modal__title">{screen}</h2>
+          <button
+            type="button"
+            className="nfw-modal__close"
+            onClick={mode === 'alert' ? onConfirm : onCancel}
+            aria-label="닫기"
+          >
+            ×
+          </button>
+        </div>
+        <div id="nfw-modal-body" className="nfw-modal__body">
+          <p className="nfw-modal__message">{message}</p>
+          {guidance && <p className="nfw-modal__guide">{guidance}</p>}
+        </div>
+        <div className="nfw-modal__actions">
           {mode === 'confirm' && (
-            <button type="button" className="nfw-btn nfw-msg__btn" onClick={onCancel}>
+            <button type="button" className="nfw-modal__btn nfw-modal__btn--cancel" onClick={onCancel}>
               {cancelLabel}
             </button>
           )}
-          <button type="button" className="nfw-btn nfw-btn--primary nfw-msg__btn" onClick={onConfirm}>
+          <button type="button" className="nfw-modal__btn nfw-modal__btn--confirm" onClick={onConfirm}>
             {confirmLabel}
           </button>
         </div>
       </div>
     </div>
   );
+}
+
+function useDialogEscape(onDismiss: () => void) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onDismiss();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onDismiss]);
 }

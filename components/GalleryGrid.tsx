@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import Image from 'next/image';
+import { PostContentImage } from '@/components/PostContentImage';
 import { Card, CardContent } from '@/components/ui/card';
 import type { SitePostCard } from '@/lib/site-post-card';
 import { postHref } from '@/lib/post-href';
@@ -36,13 +36,7 @@ export function GalleryGrid({ items, className, fourCol, showCategory = false }:
             <Card>
               <div className="nf-gallery-card__thumb">
                 {imageUrl ? (
-                  <Image
-                    src={imageUrl}
-                    alt={post.title}
-                    fill
-                    sizes="(max-width:480px) 100vw, (max-width:1024px) 50vw, 33vw"
-                    style={{ objectFit: 'cover' }}
-                  />
+                  <PostContentImage src={imageUrl} alt={post.title} fill />
                 ) : (
                   <div className="nf-gallery-card__empty">📷</div>
                 )}

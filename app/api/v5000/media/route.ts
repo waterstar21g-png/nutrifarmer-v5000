@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isR2AuthError } from '@/lib/v5000-content/r2';
 import { requireSession, withDatabase } from '@/lib/v5000-content/api';
 import { isMediaStorageConfigured, uploadMedia } from '@/lib/v5000-content/media';
 import { postErrorMessage } from '@/lib/v5000-content/validate';
@@ -45,14 +46,35 @@ export async function POST(req: NextRequest) {
       });
     } catch (err) {
       const code = err instanceof Error ? err.message : 'upload_failed';
+      if (isR2AuthError(err)) {
+        console.error('[v5000-media] R2 unauthorized — rotate R2 keys on Vercel', err);
+        return NextResponse.json(
+          {
+            ok: false,
+            code: 'storage_auth_failed',
+            message:
+              '파일 저장소 인증 오류입니다. 관리자에게 R2 API 키 갱신을 요청해 주세요. (npm run r2:rotate)',
+          },
+          { status: 503 },
+        );
+      }
       if (code === 'file_too_large' || code === 'unsupported_type') {
         return NextResponse.json(
           { ok: false, code, message: postErrorMessage(code) },
           { status: 400 },
         );
       }
+      if (code === 'storage_unconfigured' || code === 'R2 is not configured' || code === 'blob_unconfigured') {
+        return NextResponse.json(
+          { ok: false, code: 'r2_unconfigured', message: postErrorMessage('r2_unconfigured') },
+          { status: 503 },
+        );
+      }
       console.error('[v5000-media]', err);
-      return NextResponse.json({ ok: false, code: 'upload_failed', message: postErrorMessage() }, { status: 500 });
+      return NextResponse.json(
+        { ok: false, code: 'upload_failed', message: postErrorMessage('upload_failed') },
+        { status: 500 },
+      );
     }
   });
 

@@ -1,35 +1,17 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import type { PreviewImage } from './WriteEditor';
-
-export type ImagePastePosition = 'inline' | 'top' | 'bottom';
-
-const PASTE_OPTIONS: { pos: ImagePastePosition; label: string }[] = [
-  { pos: 'inline', label: '커서 위치' },
-  { pos: 'top', label: '본문상' },
-  { pos: 'bottom', label: '본문하' },
-];
 
 interface Props {
   images: PreviewImage[];
   loading?: boolean;
   onRemove: (id: string) => void;
-  onPasteToBody: (img: PreviewImage, position: ImagePastePosition) => void;
+  onPasteToBody: (img: PreviewImage) => void;
 }
 
 export function ImagePreviewGrid({ images, loading, onRemove, onPasteToBody }: Props) {
-  const [menuId, setMenuId] = useState<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!menuId) return;
-    const close = (e: MouseEvent) => {
-      if (!gridRef.current?.contains(e.target as Node)) setMenuId(null);
-    };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [menuId]);
 
   if (loading) {
     return (
@@ -43,14 +25,12 @@ export function ImagePreviewGrid({ images, loading, onRemove, onPasteToBody }: P
 
   if (images.length === 0) {
     return (
-      <div className="nfw-img-grid nfw-img-grid--empty" aria-label="이미지 미리보기">
-        <span className="nfw-img-grid__hint">좌측 [사진/이미지] → 본문 맞춤 추천</span>
-      </div>
+      <div className="nfw-img-grid nfw-img-grid--empty" aria-label="미리보기 - 이미지" />
     );
   }
 
   return (
-    <div ref={gridRef} className="nfw-img-grid" role="list" aria-label="이미지 미리보기">
+    <div ref={gridRef} className="nfw-img-grid" role="list" aria-label="미리보기 - 이미지">
       {images.map(img => (
         <figure key={img.id} className="nfw-img-grid__cell" role="listitem">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -62,9 +42,7 @@ export function ImagePreviewGrid({ images, loading, onRemove, onPasteToBody }: P
             <button
               type="button"
               className="nfw-img-grid__btn nfw-img-grid__btn--paste"
-              onClick={() => setMenuId(menuId === img.id ? null : img.id)}
-              aria-expanded={menuId === img.id}
-              aria-haspopup="menu"
+              onClick={() => onPasteToBody(img)}
             >
               붙여넣기
             </button>
@@ -78,24 +56,6 @@ export function ImagePreviewGrid({ images, loading, onRemove, onPasteToBody }: P
               ✕
             </button>
           </div>
-          {menuId === img.id && (
-            <div className="nfw-img-grid__paste-menu" role="menu" aria-label="붙여넣기 위치">
-              {PASTE_OPTIONS.map(({ pos, label }) => (
-                <button
-                  key={pos}
-                  type="button"
-                  role="menuitem"
-                  className="nfw-img-grid__paste-opt"
-                  onClick={() => {
-                    onPasteToBody(img, pos);
-                    setMenuId(null);
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
         </figure>
       ))}
     </div>

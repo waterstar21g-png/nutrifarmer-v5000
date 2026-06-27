@@ -2,8 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { postHref } from '@/lib/post-href';
+import { navigateToPost } from '@/lib/post-navigate';
 
 interface SidebarPost {
   key?: string;
@@ -18,12 +19,15 @@ interface Props {
   catSlug: string;
   catName: string;
   currentSlug: string;
+  currentPostId?: number;
 }
 
-export function SidebarSearch({ posts, catSlug, catName, currentSlug }: Props) {
+export function SidebarSearch({ posts, catSlug, catName, currentSlug, currentPostId }: Props) {
   const [query, setQuery] = useState('');
   const [pendingSlug, setPendingSlug] = useState<string | null>(null);
+  const [pendingPid, setPendingPid] = useState<number | null>(null);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const urlSlug = useMemo(() => {
     const prefix = `/${catSlug}/`;
@@ -32,20 +36,31 @@ export function SidebarSearch({ posts, catSlug, catName, currentSlug }: Props) {
     return segment || currentSlug;
   }, [pathname, catSlug, currentSlug]);
 
+  const urlPid = useMemo(() => {
+    const raw = searchParams.get('pid');
+    if (!raw) return currentPostId ?? null;
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) ? n : (currentPostId ?? null);
+  }, [searchParams, currentPostId]);
+
   const activeSlug = pendingSlug ?? urlSlug;
+  const activePid = pendingPid ?? urlPid;
 
   useEffect(() => {
-    if (pendingSlug && urlSlug === pendingSlug) {
-      setPendingSlug(null);
-    }
+    if (pendingSlug && urlSlug === pendingSlug) setPendingSlug(null);
   }, [pendingSlug, urlSlug]);
+
+  useEffect(() => {
+    if (pendingPid != null && urlPid === pendingPid) setPendingPid(null);
+  }, [pendingPid, urlPid]);
 
   const annotated = useMemo(() => {
     const q = query.trim().toLowerCase();
     return posts.map(p => {
       const title = p.title.rendered.replace(/<[^>]+>/g, '');
       const match = q.length > 0 && title.toLowerCase().includes(q);
-      return { ...p, title, match };
+      const pid = p.pid ?? p.id;
+      return { ...p, title, match, pid };
     });
   }, [posts, query]);
 
@@ -89,10 +104,11 @@ export function SidebarSearch({ posts, catSlug, catName, currentSlug }: Props) {
 
         <ul className="nf-sidebar__list nf-sidebar-post-list">
           {annotated.map(p => {
-            const isActive = p.slug === activeSlug;
+            const isActive = activePid != null ? p.pid === activePid : p.slug === activeSlug;
             const isMatch = isSearching && p.match;
             const isDim = isSearching && !p.match && !isActive;
-            const itemKey = p.key ?? `${p.pid ? 'v5000' : 'wp'}-${p.id}`;
+            const itemKey = p.key ?? `post-${p.pid}`;
+            const href = postHref(catSlug, p.slug, p.pid);
 
             return (
               <li
@@ -105,14 +121,19 @@ export function SidebarSearch({ posts, catSlug, catName, currentSlug }: Props) {
                   isDim ? 'is-dim' : '',
                 ].filter(Boolean).join(' ')}
               >
-                <Link
-                  href={postHref(catSlug, p.slug, p.pid)}
+                <a
+                  href={href}
                   className="nf-sidebar-post-link"
-                  onClick={() => setPendingSlug(p.slug)}
                   aria-current={isActive ? 'page' : undefined}
+                  onClick={e => {
+                    e.preventDefault();
+                    setPendingSlug(p.slug);
+                    setPendingPid(p.pid);
+                    navigateToPost(href);
+                  }}
                 >
                   {p.title}
-                </Link>
+                </a>
               </li>
             );
           })}

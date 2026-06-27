@@ -4,7 +4,6 @@ import { unstable_noStore as noStore } from 'next/cache';
 export const dynamic = 'force-dynamic';
 
 import { notFound, redirect } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import { getSidebarPosts } from '@/lib/site-content';
 import {
@@ -13,8 +12,9 @@ import {
 } from '@/lib/v5000-content/posts';
 import type { V5000PostRow } from '@/lib/v5000-content/schema';
 import { SHOWCASE_CATS } from '@/lib/site-data';
-import { getSiteCategory } from '@/lib/v5000-content/public-posts';
-import { rewriteHtmlMediaUrls, resolveMediaUrlSync } from '@/lib/v5000-content/media-mirror';
+import { firstImageFromBody, getSiteCategory } from '@/lib/v5000-content/public-posts';
+import { rewriteHtmlMediaUrls } from '@/lib/v5000-content/media-mirror';
+import { Suspense } from 'react';
 import { SidebarSearch } from '@/components/SidebarSearch';
 import { SinglePostFromWrite } from '@/components/SinglePostFromWrite';
 
@@ -29,17 +29,6 @@ function pathSeg(v: string): string {
   } catch {
     return v.trim();
   }
-}
-
-function firstImgFromHtml(html: string): string | null {
-  const tag = html.match(/<img\b[^>]*>/i)?.[0];
-  if (!tag) return null;
-  const src =
-    tag.match(/\bsrc=["']([^"']+)["']/i)?.[1] ??
-    tag.match(/\bdata-src=["']([^"']+)["']/i)?.[1] ??
-    tag.match(/\bsrcset=["']([^"'\s,]+)/i)?.[1] ??
-    '';
-  return src ? resolveMediaUrlSync(src.replace(/&amp;/g, '&')) : null;
 }
 
 function removeFirstImageBlock(html: string): string {
@@ -70,7 +59,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   if (!post) return {};
 
   const bodyHtml = await rewriteHtmlMediaUrls(post.body);
-  const imgUrl = firstImgFromHtml(bodyHtml);
+  const imgUrl = firstImageFromBody(bodyHtml);
   return {
     title: post.title,
     description: post.excerpt.slice(0, 160),
@@ -109,7 +98,7 @@ export default async function PostPage({ params, searchParams }: Props) {
     rewriteHtmlMediaUrls(post.body),
     getSidebarPosts(canonicalCat),
   ]);
-  const displayImgUrl = firstImgFromHtml(rawBodyHtml);
+  const displayImgUrl = firstImageFromBody(rawBodyHtml);
   const bodyHtml = displayImgUrl ? removeFirstImageBlock(rawBodyHtml) : rawBodyHtml;
   const title = post.title;
 
@@ -126,13 +115,11 @@ export default async function PostPage({ params, searchParams }: Props) {
 
           {displayImgUrl ? (
             <div className="nf-single-hero" aria-label={`${title} 대표 이미지`}>
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={displayImgUrl}
                 alt={title}
-                fill
-                priority
-                sizes="(max-width: 900px) 100vw, calc(100vw - 340px)"
-                style={{ objectFit: 'contain' }}
+                className="nf-single-hero__img"
               />
             </div>
           ) : (
@@ -157,12 +144,15 @@ export default async function PostPage({ params, searchParams }: Props) {
         </article>
 
         {cat && (
-          <SidebarSearch
-            posts={sidePosts}
-            catSlug={cat.slug}
-            catName={cat.name}
-            currentSlug={canonicalSlug}
-          />
+          <Suspense fallback={null}>
+            <SidebarSearch
+              posts={sidePosts}
+              catSlug={cat.slug}
+              catName={cat.name}
+              currentSlug={canonicalSlug}
+              currentPostId={post.id}
+            />
+          </Suspense>
         )}
       </div>
     </div>

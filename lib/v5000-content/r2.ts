@@ -1,21 +1,30 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+  type S3ClientConfig,
+} from '@aws-sdk/client-s3';
 import { SITE_URL } from '@/lib/v5000-auth/config';
 import { getDb } from '@/lib/v5000-auth/db';
+import { validateUploadMime, resolveUploadMime } from './upload-mime';
 import { v5000Media } from './schema';
 
 const MAX_BYTES = 15 * 1024 * 1024;
 
-const ALLOWED_MIME = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml',
-  'application/pdf',
-  'text/plain',
-  'application/zip',
-  'video/mp4',
-]);
+export function isR2AuthError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const name = 'name' in err ? String((err as { name?: string }).name) : '';
+  const msg = err instanceof Error ? err.message : String(err);
+  const code = 'Code' in err ? String((err as { Code?: string }).Code) : '';
+  const combined = `${name} ${code} ${msg}`.toLowerCase();
+  return (
+    combined.includes('unauthorized') ||
+    combined.includes('invalidaccesskeyid') ||
+    combined.includes('signaturedoesnotmatch') ||
+    combined.includes('accessdenied') ||
+    combined.includes('credentials')
+  );
+}
 
 export function isR2Configured(): boolean {
   return !!(
@@ -52,16 +61,23 @@ export function publicMediaUrl(key: string): string {
   return `${site}/api/v5000/files/${key.split('/').map(encodeURIComponent).join('/')}`;
 }
 
-function r2Client(): S3Client {
-  const accountId = process.env.R2_ACCOUNT_ID!.trim();
-  return new S3Client({
+/** AWS SDK 3.729+ 기본 CRC 체크섬은 R2 미지원 — WHEN_REQUIRED 로 비활성 */
+function r2ClientConfig(accountId: string): S3ClientConfig {
+  return {
     region: 'auto',
     endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
     credentials: {
       accessKeyId: process.env.R2_ACCESS_KEY_ID!.trim(),
       secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!.trim(),
     },
-  });
+    requestChecksumCalculation: 'WHEN_REQUIRED',
+    responseChecksumValidation: 'WHEN_REQUIRED',
+  };
+}
+
+function r2Client(): S3Client {
+  const accountId = process.env.R2_ACCOUNT_ID!.trim();
+  return new S3Client(r2ClientConfig(accountId));
 }
 
 function safeFilename(name: string): string {
@@ -88,10 +104,7 @@ export async function uploadMedia(
   if (file.size > MAX_BYTES) {
     throw new Error('file_too_large');
   }
-  const mime = file.type || 'application/octet-stream';
-  if (!ALLOWED_MIME.has(mime)) {
-    throw new Error('unsupported_type');
-  }
+  const mime = validateUploadMime(resolveUploadMime(file), file.name);
 
   const key = `media/${uploaderId}/${Date.now()}-${safeFilename(file.name)}`;
   const buffer = Buffer.from(await file.arrayBuffer());

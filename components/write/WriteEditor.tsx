@@ -8,12 +8,27 @@ import { bindWritePopupToOpener, goToMainHome, goToMainPostView } from '@/lib/wr
 import { openAuthFromWritePopup } from '@/lib/auth-navigation';
 import { DraftPanel } from './DraftPanel';
 import { ChatPanel } from './ChatPanel';
-import { NewDraftConfirmDialog } from './NewDraftConfirmDialog';
-import { WriteMessageProvider } from './WriteMessageContext';
+import { WriteInsertRail } from './WriteInsertRail';
+import { WriteMessageProvider, useWriteMessage } from './WriteMessageContext';
 import type { AiCmdId } from '@/lib/write-ai-local';
 import { extractSummaryFromAi, extractTitleFromAi } from '@/lib/write-ai-commands';
-import { applyRevisionDiff } from '@/lib/write-body-diff';
+import { applyRevisionDiff, commitRevisionOnDraftSave } from '@/lib/write-body-diff';
+import { buildBodyImageFigureHtml } from '@/lib/write-body-images';
 import { stripBodyPlain, bodyHtmlForPublish } from '@/lib/write-body-plain';
+import { prependFeaturedImageIfMissing, resolveFeaturedImageUrl } from '@/lib/write-featured-image';
+import {
+  buildBodyFileBlockHtml,
+  buildBodyVideoBlockHtml,
+  normalizeBodyForEditor,
+} from '@/lib/write-body-blocks';
+import {
+  formatAiAppendChunk,
+  insertFigureAtDom,
+  insertHtmlAtDom,
+  mergeBodyHtml,
+} from '@/lib/write-body-insert';
+import type { InsertPosition } from '@/lib/write-insert-position';
+import { INSERT_POSITION_LABEL } from '@/lib/write-insert-position';
 import { fetchSuggestedImages } from '@/lib/write-image-suggest';
 
 export const CONTENT_API = '/api/v5000';
@@ -43,7 +58,7 @@ export interface DraftState {
   excerpt: string;
   body: string;
   bodyRevision: number;
-  /** bodySnapshots[0]=원본, [n]=n차 AI 반영 직후 */
+  /** bodySnapshots[0]=원본, [n]=n차 변경 직후 */
   bodySnapshots: string[];
   viewingRevision: number;
   images: InsertedImage[];
@@ -67,14 +82,23 @@ const PHASE_LABEL: Record<WritePhase, string> = {
 };
 
 export function WriteEditor() {
+  return (
+    <WriteMessageProvider>
+      <WriteEditorInner />
+    </WriteMessageProvider>
+  );
+}
+
+function WriteEditorInner() {
+  const msg = useWriteMessage();
   const [draft, setDraft] = useState<DraftState>(EMPTY_DRAFT);
   const [phase, setPhase] = useState<WritePhase>('finalize');
+  const [insertPosition, setInsertPosition] = useState<InsertPosition>('inline');
   const [splitPct, setSplitPct] = useState(50);
   const [statusMsg, setStatusMsg] = useState('');
-  const [newDraftConfirmOpen, setNewDraftConfirmOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
-  const newDraftResolveRef = useRef<((ok: boolean) => void) | null>(null);
-  const splitRef = useRef<HTMLDivElement>(null);
+  const layoutRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
   useEffect(() => {
@@ -100,6 +124,7 @@ export function WriteEditor() {
           viewingRevision: parsed.viewingRevision ?? parsed.bodyRevision ?? 0,
           postSlug: parsed.postSlug ?? '',
           previewImages: parsed.previewImages ?? [],
+          images: [],
         });
       }
     } catch {}
@@ -114,10 +139,10 @@ export function WriteEditor() {
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
     const move = (e: MouseEvent) => {
-      if (!isDragging.current || !splitRef.current) return;
-      const rect = splitRef.current.parentElement!.getBoundingClientRect();
+      if (!isDragging.current || !layoutRef.current) return;
+      const rect = layoutRef.current.getBoundingClientRect();
       const pct = ((e.clientX - rect.left) / rect.width) * 100;
-      setSplitPct(Math.min(74, Math.max(26, pct)));
+      setSplitPct(Math.min(72, Math.max(28, pct)));
     };
     const up = () => {
       isDragging.current = false;
@@ -130,15 +155,47 @@ export function WriteEditor() {
     window.addEventListener('mouseup', up);
   }, []);
 
-  const insertImage = useCallback((img: InsertedImage) => {
+  const insertImage = useCallback((payload: { url: string; alt: string; descFontSize: number }) => {
+    const pos = insertPosition;
+    const el = bodyRef.current;
     setDraft(prev => {
-      const tag = `\n![${img.alt || '이미지'}](${img.url})\n`;
       let body = prev.body;
-      if (img.position === 'top') body = tag + body;
-      if (img.position === 'bottom') body = body + tag;
-      return { ...prev, images: [...prev.images, img], body };
+      const figure = buildBodyImageFigureHtml(payload.url, payload.alt, undefined, payload.descFontSize);
+      if (el) {
+        body = insertFigureAtDom(el, payload.url, payload.alt, pos, payload.descFontSize);
+      } else {
+        body = mergeBodyHtml(body, figure, pos === 'inline' ? 'bottom' : pos);
+      }
+      return { ...prev, body, images: [] };
     });
-  }, []);
+    setStatusMsg(`✅ 이미지 → ${INSERT_POSITION_LABEL[pos]}에 추가했습니다.`);
+  }, [insertPosition]);
+
+  const insertVideo = useCallback((payload: { url: string; title: string; descFontSize: number }) => {
+    const pos = insertPosition;
+    const block = buildBodyVideoBlockHtml(payload.url, payload.title, undefined, payload.descFontSize);
+    const el = bodyRef.current;
+    setDraft(prev => ({
+      ...prev,
+      body: el
+        ? insertHtmlAtDom(el, block, pos)
+        : mergeBodyHtml(prev.body, block, pos === 'inline' ? 'bottom' : pos),
+    }));
+    setStatusMsg(`✅ 동영상 → ${INSERT_POSITION_LABEL[pos]}에 추가했습니다.`);
+  }, [insertPosition]);
+
+  const insertFile = useCallback((payload: { url: string; name: string; descFontSize: number }) => {
+    const pos = insertPosition;
+    const block = buildBodyFileBlockHtml(payload.url, payload.name, undefined, payload.descFontSize);
+    const el = bodyRef.current;
+    setDraft(prev => ({
+      ...prev,
+      body: el
+        ? insertHtmlAtDom(el, block, pos)
+        : mergeBodyHtml(prev.body, block, pos === 'inline' ? 'bottom' : pos),
+    }));
+    setStatusMsg(`✅ 파일 → ${INSERT_POSITION_LABEL[pos]}에 추가했습니다.`);
+  }, [insertPosition]);
 
   const handleAiApply = useCallback((text: string, cmdId: AiCmdId) => {
     const clean = text.trim();
@@ -157,6 +214,38 @@ export function WriteEditor() {
       setDraft(prev => ({ ...prev, excerpt: extractSummaryFromAi(clean) }));
       setPhase('finalize');
       setStatusMsg('✅ AI 요약을 우측 [요약]에 반영했습니다.');
+      return;
+    }
+
+    /** 일반명령문 — 위치 지정(상·커서·하) 기준 추가 (덮어쓰기 없음) */
+    if (cmdId === 'prompt') {
+      const pos = insertPosition;
+      let revNum = 1;
+      setDraft(prev => {
+        revNum = prev.bodyRevision + 1;
+        const snapshots = prev.bodySnapshots.slice(0, prev.bodyRevision + 1);
+        if (snapshots[0] === undefined) {
+          snapshots[0] = prev.body;
+        }
+        const chunk = formatAiAppendChunk(clean, revNum);
+        const el = bodyRef.current;
+        let body = prev.body;
+        if (el) {
+          body = insertHtmlAtDom(el, chunk, pos);
+        } else {
+          body = mergeBodyHtml(body, chunk, pos === 'inline' ? 'bottom' : pos);
+        }
+        snapshots[revNum] = body;
+        return {
+          ...prev,
+          body,
+          bodyRevision: revNum,
+          bodySnapshots: snapshots,
+          viewingRevision: revNum,
+        };
+      });
+      setPhase('finalize');
+      setStatusMsg(`✅ 일반명령문 결과 → ${INSERT_POSITION_LABEL[pos]}에 추가했습니다. (${revNum}차)`);
       return;
     }
 
@@ -179,7 +268,7 @@ export function WriteEditor() {
     });
     setPhase('finalize');
     setStatusMsg(`✅ AI 결과를 우측 [본문]에 반영했습니다. (${revNum}차 변경 표시)`);
-  }, []);
+  }, [insertPosition]);
 
   const selectBodyRevision = useCallback((rev: number) => {
     setDraft(d => {
@@ -193,9 +282,18 @@ export function WriteEditor() {
 
   const saveDraft = useCallback(() => {
     try {
-      localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(draft));
-      setStatusMsg('✅ 임시저장 완료');
-    } catch { setStatusMsg('❌ 저장 실패'); }
+      const rawBody = bodyRef.current?.innerHTML ?? draft.body;
+      const { next, newRev } = commitRevisionOnDraftSave(draft, rawBody, normalizeBodyForEditor);
+      setDraft(next);
+      localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(next));
+      setStatusMsg(
+        newRev
+          ? `✅ 임시저장 완료 — ${newRev}차 변경 기록`
+          : '✅ 임시저장 완료',
+      );
+    } catch {
+      setStatusMsg('❌ 저장 실패');
+    }
   }, [draft]);
 
   const publishPost = useCallback(async () => {
@@ -252,35 +350,47 @@ export function WriteEditor() {
   }, [draft]);
 
   const resetDraft = useCallback(() => {
+    bodyRef.current?.blur();
     setDraft(EMPTY_DRAFT);
     setPhase('finalize');
+    try {
+      localStorage.removeItem(LS_DRAFT_KEY);
+    } catch {
+      /* ignore */
+    }
     setStatusMsg('1차 · 새 글 쓰기 — 화면을 초기화했습니다.');
   }, []);
 
-  const newDraft = useCallback((): boolean | Promise<boolean> => {
-    const hasBody = stripBodyPlain(draft.body).length > 0;
-    if (!hasBody) {
+  const newDraft = useCallback(async (): Promise<boolean> => {
+    const hasContent = Boolean(
+      draft.title.trim()
+      || draft.excerpt.trim()
+      || stripBodyPlain(draft.body).length > 0
+      || draft.previewImages.length > 0
+      || draft.postId,
+    );
+    if (!hasContent) {
       resetDraft();
       return true;
     }
-    return new Promise(resolve => {
-      newDraftResolveRef.current = resolve;
-      setNewDraftConfirmOpen(true);
+    const ok = await msg.confirm({
+      variant: 'new-draft',
+      screen: '1차 · 새 글 쓰기',
+      message: '',
+      confirmLabel: '초기화',
+      cancelLabel: '기존글 유지',
     });
-  }, [draft.body, resetDraft]);
-
-  const confirmNewDraft = useCallback(() => {
-    setNewDraftConfirmOpen(false);
-    resetDraft();
-    newDraftResolveRef.current?.(true);
-    newDraftResolveRef.current = null;
-  }, [resetDraft]);
-
-  const cancelNewDraft = useCallback(() => {
-    setNewDraftConfirmOpen(false);
-    newDraftResolveRef.current?.(false);
-    newDraftResolveRef.current = null;
-  }, []);
+    if (ok) resetDraft();
+    return ok;
+  }, [
+    draft.title,
+    draft.excerpt,
+    draft.body,
+    draft.previewImages.length,
+    draft.postId,
+    resetDraft,
+    msg,
+  ]);
 
   const recommendImages = useCallback(async (): Promise<string> => {
     const context = stripBodyPlain(draft.body);
@@ -296,7 +406,10 @@ export function WriteEditor() {
     setStatusMsg('🖼 본문에 맞는 이미지를 찾는 중…');
     try {
       const images = await fetchSuggestedImages({ title, excerpt, body: context });
-      setDraft(d => ({ ...d, previewImages: images }));
+      setDraft(d => ({
+        ...d,
+        previewImages: [...d.previewImages, ...images],
+      }));
       const msg = `✅ 추천 이미지 ${images.length}장 — 우측 [이미지 미리보기] 그리드에 반영했습니다.`;
       setStatusMsg(msg);
       return `${msg}\n키워드: ${images.map(i => i.keyword).join(', ')}`;
@@ -322,13 +435,13 @@ export function WriteEditor() {
 
   const goFinalize = useCallback(() => {
     setPhase('finalize');
-    setStatusMsg('⬅ [글쓰기 완성]으로 돌아왔습니다.');
+    setStatusMsg('⬅ [글 수정하기]로 돌아왔습니다.');
   }, []);
 
-  const viewPublishedPost = useCallback(async () => {
+  const viewPublishedPost = useCallback(async (): Promise<{ ok: boolean; silent?: boolean }> => {
     if (!draft.categorySlug && !draft.postId) {
       setStatusMsg('⚠️ 카테고리를 선택해 주세요.');
-      return;
+      return { ok: false, silent: true };
     }
 
     let categorySlug = draft.categorySlug;
@@ -344,12 +457,12 @@ export function WriteEditor() {
       if (r.status === 401) {
         setStatusMsg('⚠️ 로그인이 만료되었습니다.');
         openAuthFromWritePopup(`/login?redirect_to=${encodeURIComponent('/write')}`);
-        return;
+        return { ok: false, silent: true };
       }
       if (postId && r.ok && data.ok && data.post) {
         if (data.post.status !== 'publish') {
           setStatusMsg('⚠️ 게시된 글이 없습니다. 먼저 게시하기를 실행해 주세요.');
-          return;
+          return { ok: false, silent: true };
         }
         categorySlug = data.post.categorySlug || categorySlug;
         slug = data.post.slug;
@@ -369,12 +482,12 @@ export function WriteEditor() {
         }));
       }
     } catch {
-      /* fallback to stored slug */
+      /* draft에 저장된 slug·postId 로 진행 */
     }
 
     if (!slug || !categorySlug) {
       setStatusMsg('⚠️ 게시 후 게시글보기를 이용할 수 있습니다.');
-      return;
+      return { ok: false };
     }
 
     const path = postId
@@ -382,10 +495,10 @@ export function WriteEditor() {
       : `/${categorySlug}/${slug}`;
     goToMainPostView(path);
     setStatusMsg(`👁 방금 게시글 → ${path}`);
+    return { ok: true };
   }, [draft.categorySlug, draft.postId, draft.postSlug]);
 
   return (
-    <WriteMessageProvider>
     <div className="nfw-app">
       <header className="nfw-topbar">
         <div className="nfw-topbar__left">
@@ -402,12 +515,13 @@ export function WriteEditor() {
         </div>
       </header>
 
-      <div className="nfw-layout">
+      <div ref={layoutRef} className="nfw-layout">
         <div className="nfw-chat-col" style={{ flexBasis: `${splitPct}%`, maxWidth: `${splitPct}%` }}>
           <ChatPanel
             draft={draft}
-            setDraft={setDraft}
             onInsertImage={insertImage}
+            onInsertVideo={insertVideo}
+            onInsertFile={insertFile}
             onNewDraft={newDraft}
             onAiApply={handleAiApply}
             onRecommendImages={recommendImages}
@@ -415,7 +529,11 @@ export function WriteEditor() {
           />
         </div>
 
-        <div ref={splitRef} className="nfw-splitter" onMouseDown={onSplitDown} />
+        <WriteInsertRail
+          position={insertPosition}
+          onChange={setInsertPosition}
+          onResizeStart={onSplitDown}
+        />
 
         <div className="nfw-draft-col" style={{ flexBasis: `${100 - splitPct}%`, maxWidth: `${100 - splitPct}%` }}>
           <DraftPanel
@@ -424,6 +542,8 @@ export function WriteEditor() {
             phase={phase}
             setPhase={setPhase}
             categories={CATEGORIES}
+            bodyRef={bodyRef}
+            insertPosition={insertPosition}
             onSave={saveDraft}
             onPublish={publishPost}
             onBackToFinalize={goFinalize}
@@ -435,26 +555,22 @@ export function WriteEditor() {
           />
         </div>
       </div>
-
-      {newDraftConfirmOpen && (
-        <NewDraftConfirmDialog
-          onConfirm={confirmNewDraft}
-          onCancel={cancelNewDraft}
-        />
-      )}
     </div>
-    </WriteMessageProvider>
   );
 }
 
 function buildContent(draft: DraftState): string {
-  const top = draft.images.filter(i => i.position === 'top')
-    .map(i => `<figure><img src="${i.url}" alt="${i.alt}" /></figure>`).join('\n');
-  const bot = draft.images.filter(i => i.position === 'bottom')
-    .map(i => `<figure><img src="${i.url}" alt="${i.alt}" /></figure>`).join('\n');
-  let bodyHtml = bodyHtmlForPublish(draft.body);
+  const previewUrls = draft.previewImages.map(p => p.url);
+  const featured = resolveFeaturedImageUrl(draft.body, previewUrls);
+  let bodyHtml = featured
+    ? prependFeaturedImageIfMissing(
+        draft.body,
+        featured,
+        draft.previewImages[0]?.alt || draft.title || '대표 이미지',
+      )
+    : bodyHtmlForPublish(draft.body);
   if (bodyHtml && !/<img\b/i.test(bodyHtml) && !/<br\b/i.test(bodyHtml)) {
     bodyHtml = bodyHtml.replace(/\n/g, '<br>');
   }
-  return [top, bodyHtml, bot].filter(Boolean).join('\n\n');
+  return bodyHtml;
 }

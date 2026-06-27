@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { PostContentImage } from '@/components/PostContentImage';
 import type { PreviewPost } from '@/lib/home-posts';
+import { postHref } from '@/lib/post-href';
 
 const PAGE_SIZE = 8;
 
@@ -69,15 +70,13 @@ export function PreviewCarousel({ posts, catName, resetKey }: Props) {
         <div className="nf-preview-grid nf-preview-grid--carousel">
           {visible.map(post => (
             <article key={post.id} className="nf-preview-card">
-              <Link href={`/${post.categorySlug}/${post.slug}`} className="nf-preview-card-link">
+              <Link href={postHref(post.categorySlug, post.slug, post.pid ?? post.id)} className="nf-preview-card-link">
                 <div className="nf-preview-card-thumb">
                   {post.imageUrl ? (
-                    <Image
+                    <PostContentImage
                       src={post.imageUrl}
                       alt={post.title}
                       fill
-                      sizes="(max-width:640px) 50vw, 25vw"
-                      style={{ objectFit: 'cover' }}
                     />
                   ) : (
                     <span className="nf-preview-card-placeholder" aria-hidden="true">📷</span>

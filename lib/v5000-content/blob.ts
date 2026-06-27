@@ -1,20 +1,9 @@
 import { put } from '@vercel/blob';
 import { getDb } from '@/lib/v5000-auth/db';
+import { validateUploadMime, resolveUploadMime } from './upload-mime';
 import { v5000Media } from './schema';
 
 const MAX_BYTES = 15 * 1024 * 1024;
-
-const ALLOWED_MIME = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml',
-  'application/pdf',
-  'text/plain',
-  'application/zip',
-  'video/mp4',
-]);
 
 export function isBlobConfigured(): boolean {
   return !!(
@@ -47,10 +36,7 @@ export async function uploadMediaBlob(
   if (file.size > MAX_BYTES) {
     throw new Error('file_too_large');
   }
-  const mime = file.type || 'application/octet-stream';
-  if (!ALLOWED_MIME.has(mime)) {
-    throw new Error('unsupported_type');
-  }
+  const mime = validateUploadMime(resolveUploadMime(file), file.name);
 
   const pathname = `media/${uploaderId}/${Date.now()}-${safeFilename(file.name)}`;
   const altText = alt?.trim() || file.name.replace(/\.[^.]+$/, '');

@@ -6,6 +6,17 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
 }
 
+function formatPublishMeta(post: EditorPost): string {
+  const name = post.authorDisplayName?.trim() || '—';
+  if (post.status !== 'publish' || !post.publishedAt) {
+    return post.status === 'draft' ? `${name} · 초안` : name;
+  }
+  const d = new Date(post.publishedAt);
+  const date = d.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  const time = d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return `${name} · ${date} · ${time}`;
+}
+
 interface Props {
   posts: EditorPost[];
   selectedId: number | null;
@@ -34,7 +45,7 @@ export function PostListGrid({ posts, selectedId, emptyLabel = '목록 없음', 
               title={title}
             >
               <span className="nfw-load-grid__title">{title}</span>
-              <span className={`nfw-load-grid__status nfw-load-grid__status--${p.status}`}>{p.status}</span>
+              <span className="nfw-load-grid__meta">{formatPublishMeta(p)}</span>
             </button>
           </li>
         );

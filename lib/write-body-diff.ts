@@ -92,3 +92,45 @@ export function applyRevisionDiff(oldHtml: string, newPlain: string, revision: n
   if (!next) return oldHtml;
   return opsToHtml(diffChars(oldPlain, next), revision);
 }
+
+export type RevisionSnapshotState = {
+  body: string;
+  bodyRevision: number;
+  bodySnapshots: string[];
+  viewingRevision: number;
+};
+
+/** 임시저장 — 본문이 현재 보기 기준과 다르면 변경 구분에 새 스냅샷 기록 */
+export function commitRevisionOnDraftSave<T extends RevisionSnapshotState>(
+  prev: T,
+  rawBodyHtml: string,
+  normalize: (html: string) => string,
+): { next: T; newRev?: number } {
+  const body = normalize(rawBodyHtml);
+  const baseRev = prev.viewingRevision;
+  const baselineHtml = prev.bodySnapshots[baseRev];
+  const baselinePlain = stripBodyPlain(baselineHtml ?? '');
+  const currentPlain = stripBodyPlain(body);
+
+  if (currentPlain === baselinePlain) {
+    return { next: { ...prev, body } };
+  }
+
+  const revNum = baseRev + 1;
+  const snapshots = prev.bodySnapshots.slice(0, baseRev + 1);
+  if (snapshots[0] === undefined) {
+    snapshots[0] = baselineHtml ?? '';
+  }
+  snapshots[revNum] = body;
+
+  return {
+    next: {
+      ...prev,
+      body,
+      bodyRevision: revNum,
+      bodySnapshots: snapshots,
+      viewingRevision: revNum,
+    },
+    newRev: revNum,
+  };
+}

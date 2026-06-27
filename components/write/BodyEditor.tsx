@@ -8,10 +8,12 @@ import {
   useImperativeHandle,
 } from 'react';
 import { REVISION_LABELS } from '@/lib/write-body-diff';
+import { normalizeBodyForEditor } from '@/lib/write-body-blocks';
 import {
-  clampBodyImgWidth,
-  normalizeBodyImagesForEditor,
-} from '@/lib/write-body-images';
+  BODY_EMBED_SELECTOR,
+  moveEmbedBlock,
+} from '@/lib/write-body-block-ui';
+import { clampBodyImgWidth } from '@/lib/write-body-images';
 
 interface Props {
   body: string;
@@ -42,6 +44,10 @@ function isEditorHtmlEmpty(html: string): boolean {
   return stripped.length === 0;
 }
 
+function findEmbed(target: EventTarget | null): HTMLElement | null {
+  return (target as HTMLElement | null)?.closest(BODY_EMBED_SELECTOR) as HTMLElement | null;
+}
+
 export const BodyEditor = forwardRef<HTMLDivElement, Props>(function BodyEditor(
   {
     body,
@@ -55,14 +61,15 @@ export const BodyEditor = forwardRef<HTMLDivElement, Props>(function BodyEditor(
   ref,
 ) {
   const innerRef = useRef<HTMLDivElement>(null);
-  const propBodyRef = useRef(body);
+  const propBodyRef = useRef<string | null>(null);
   const revisionKeyRef = useRef(`${bodyRevision}:${viewingRevision}`);
   const isFocusedRef = useRef(false);
   const resizeRef = useRef<{ fig: HTMLElement; startX: number; startW: number } | null>(null);
+  const dragRef = useRef<{ block: HTMLElement } | null>(null);
+  const dropLineRef = useRef<HTMLDivElement | null>(null);
 
   useImperativeHandle(ref, () => innerRef.current as HTMLDivElement);
 
-  /** props → DOM: AI 반영·버전 전환 등 외부 변경만 반영 (클릭·입력 시 덮어쓰지 않음) */
   useEffect(() => {
     const el = innerRef.current;
     if (!el) return;
@@ -71,23 +78,23 @@ export const BodyEditor = forwardRef<HTMLDivElement, Props>(function BodyEditor(
     const bodyChanged = body !== propBodyRef.current;
     const revChanged = revKey !== revisionKeyRef.current;
     if (!bodyChanged && !revChanged) return;
-    /* 편집 중 클릭·입력 시 React props 동기화가 DOM을 덮어쓰지 않도록 (버전 전환은 예외) */
-    if (isFocusedRef.current && !revChanged) return;
+    const externalClear = body === '' && Boolean(propBodyRef.current);
+    if (isFocusedRef.current && !revChanged && !externalClear) return;
 
     propBodyRef.current = body;
     revisionKeyRef.current = revKey;
 
-    const normalized = normalizeBodyImagesForEditor(body || '');
+    const normalized = normalizeBodyForEditor(body || '');
     if (el.innerHTML !== normalized) {
       el.innerHTML = normalized;
     }
   }, [body, bodyRevision, viewingRevision]);
 
-  const pushHtml = useCallback((normalizeImages: boolean) => {
+  const pushHtml = useCallback((normalizeBlocks: boolean) => {
     const el = innerRef.current;
     if (!el) return;
-    if (normalizeImages) {
-      const normalized = normalizeBodyImagesForEditor(el.innerHTML);
+    if (normalizeBlocks) {
+      const normalized = normalizeBodyForEditor(el.innerHTML);
       if (el.innerHTML !== normalized) el.innerHTML = normalized;
     }
     propBodyRef.current = el.innerHTML;
@@ -99,31 +106,39 @@ export const BodyEditor = forwardRef<HTMLDivElement, Props>(function BodyEditor(
     if (!el) return;
 
     const clearSelection = () => {
-      el.querySelectorAll('.nfw-body-img.is-selected').forEach(n => n.classList.remove('is-selected'));
+      el.querySelectorAll(`${BODY_EMBED_SELECTOR}.is-selected`).forEach(n => n.classList.remove('is-selected'));
     };
 
-    const removeFigure = (fig: Element | null) => {
-      if (!fig) return;
-      fig.remove();
+    const removeBlock = (block: Element | null) => {
+      if (!block) return;
+      block.remove();
       pushHtml(true);
     };
 
+    const setBlockWidth = (fig: HTMLElement, w: number) => {
+      const width = clampBodyImgWidth(w);
+      fig.style.width = `${width}px`;
+      fig.dataset.width = String(width);
+      const inp = fig.querySelector('.nfw-body-block__width-in, .nfw-body-img__width-in') as HTMLInputElement | null;
+      if (inp) inp.value = String(width);
+    };
+
     const onPointerDown = (e: PointerEvent) => {
-      const del = (e.target as HTMLElement).closest('.nfw-body-img__del');
+      const del = (e.target as HTMLElement).closest('.nfw-body-block__del, .nfw-body-img__del');
       if (!del) return;
       e.preventDefault();
       e.stopPropagation();
-      removeFigure(del.closest('.nfw-body-img'));
+      removeBlock(del.closest(BODY_EMBED_SELECTOR));
     };
 
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
+      if (target.closest('.nfw-body-block__del, .nfw-body-img__del')) return;
+      if (target.classList.contains('nfw-body-block__width-in') || target.classList.contains('nfw-body-img__width-in')) return;
+      if (target.closest('.nfw-body-block__resize, .nfw-body-img__resize')) return;
+      if (target.closest('.nfw-body-block__drag, .nfw-body-img__drag')) return;
 
-      if (target.closest('.nfw-body-img__del')) return;
-      if (target.classList.contains('nfw-body-img__width-in')) return;
-      if (target.closest('.nfw-body-img__resize')) return;
-
-      const fig = target.closest('.nfw-body-img') as HTMLElement | null;
+      const fig = findEmbed(target);
       clearSelection();
       if (fig) {
         fig.classList.add('is-selected');
@@ -133,25 +148,21 @@ export const BodyEditor = forwardRef<HTMLDivElement, Props>(function BodyEditor(
 
     const onChangeWidth = (e: Event) => {
       const inp = e.target as HTMLInputElement;
-      if (!inp.classList.contains('nfw-body-img__width-in')) return;
-      const fig = inp.closest('.nfw-body-img') as HTMLElement | null;
+      if (!inp.classList.contains('nfw-body-block__width-in') && !inp.classList.contains('nfw-body-img__width-in')) return;
+      const fig = inp.closest(BODY_EMBED_SELECTOR) as HTMLElement | null;
       if (!fig) return;
-      const w = clampBodyImgWidth(parseInt(inp.value, 10) || 320);
-      inp.value = String(w);
-      fig.style.width = `${w}px`;
-      fig.dataset.width = String(w);
+      setBlockWidth(fig, parseInt(inp.value, 10) || 320);
       pushHtml(true);
     };
 
     const onResizeDown = (e: MouseEvent) => {
-      const handle = (e.target as HTMLElement).closest('.nfw-body-img__resize');
+      const handle = (e.target as HTMLElement).closest('.nfw-body-block__resize, .nfw-body-img__resize');
       if (!handle) return;
       e.preventDefault();
       e.stopPropagation();
-      const fig = handle.closest('.nfw-body-img') as HTMLElement;
+      const fig = handle.closest(BODY_EMBED_SELECTOR) as HTMLElement;
       fig.classList.add('is-selected');
-      const startW = fig.offsetWidth;
-      resizeRef.current = { fig, startX: e.clientX, startW };
+      resizeRef.current = { fig, startX: e.clientX, startW: fig.offsetWidth };
       document.body.style.cursor = 'ew-resize';
       document.body.style.userSelect = 'none';
     };
@@ -159,12 +170,7 @@ export const BodyEditor = forwardRef<HTMLDivElement, Props>(function BodyEditor(
     const onResizeMove = (e: MouseEvent) => {
       const r = resizeRef.current;
       if (!r) return;
-      const delta = e.clientX - r.startX;
-      const w = clampBodyImgWidth(r.startW + delta);
-      r.fig.style.width = `${w}px`;
-      r.fig.dataset.width = String(w);
-      const inp = r.fig.querySelector('.nfw-body-img__width-in') as HTMLInputElement | null;
-      if (inp) inp.value = String(w);
+      setBlockWidth(r.fig, r.startW + (e.clientX - r.startX));
     };
 
     const onResizeUp = () => {
@@ -175,9 +181,57 @@ export const BodyEditor = forwardRef<HTMLDivElement, Props>(function BodyEditor(
       pushHtml(true);
     };
 
+    const ensureDropLine = (): HTMLDivElement => {
+      if (!dropLineRef.current) {
+        const line = document.createElement('div');
+        line.className = 'nfw-body-drop-line';
+        dropLineRef.current = line;
+      }
+      return dropLineRef.current;
+    };
+
+    const hideDropLine = () => {
+      dropLineRef.current?.remove();
+      dropLineRef.current = null;
+    };
+
+    const onDragDown = (e: MouseEvent) => {
+      const handle = (e.target as HTMLElement).closest('.nfw-body-block__drag, .nfw-body-img__drag');
+      if (!handle) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const block = handle.closest(BODY_EMBED_SELECTOR) as HTMLElement;
+      block.classList.add('is-selected', 'is-dragging');
+      dragRef.current = { block };
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+    };
+
+    const onDragMove = (e: MouseEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
+      const line = ensureDropLine();
+      const rect = el.getBoundingClientRect();
+      line.style.top = `${Math.min(Math.max(e.clientY - rect.top, 0), rect.height)}px`;
+      if (!line.parentElement) el.appendChild(line);
+    };
+
+    const onDragUp = (e: MouseEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
+      d.block.classList.remove('is-dragging');
+      dragRef.current = null;
+      hideDropLine();
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      moveEmbedBlock(d.block, el, e.clientX, e.clientY);
+      d.block.classList.add('is-selected');
+      pushHtml(true);
+    };
+
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Delete' && e.key !== 'Backspace') return;
-      const selected = el.querySelector('.nfw-body-img.is-selected');
+      const selected = el.querySelector(`${BODY_EMBED_SELECTOR}.is-selected`);
       if (!selected) return;
       e.preventDefault();
       selected.remove();
@@ -188,18 +242,25 @@ export const BodyEditor = forwardRef<HTMLDivElement, Props>(function BodyEditor(
     el.addEventListener('click', onClick);
     el.addEventListener('change', onChangeWidth);
     el.addEventListener('mousedown', onResizeDown);
+    el.addEventListener('mousedown', onDragDown);
     el.addEventListener('keydown', onKeyDown);
     window.addEventListener('mousemove', onResizeMove);
     window.addEventListener('mouseup', onResizeUp);
+    window.addEventListener('mousemove', onDragMove);
+    window.addEventListener('mouseup', onDragUp);
 
     return () => {
       el.removeEventListener('pointerdown', onPointerDown);
       el.removeEventListener('click', onClick);
       el.removeEventListener('change', onChangeWidth);
       el.removeEventListener('mousedown', onResizeDown);
+      el.removeEventListener('mousedown', onDragDown);
       el.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('mousemove', onResizeMove);
       window.removeEventListener('mouseup', onResizeUp);
+      window.removeEventListener('mousemove', onDragMove);
+      window.removeEventListener('mouseup', onDragUp);
+      hideDropLine();
     };
   }, [pushHtml]);
 
@@ -207,9 +268,8 @@ export const BodyEditor = forwardRef<HTMLDivElement, Props>(function BodyEditor(
     const el = innerRef.current;
     if (!el) return;
     const html = el.innerHTML;
-    /* 클릭만으로 input이 발생할 때 빈 값으로 본문이 지워지는 브라우저 quirks 방지 */
     if (isEditorHtmlEmpty(html) && propBodyRef.current && !isEditorHtmlEmpty(propBodyRef.current)) {
-      const restored = normalizeBodyImagesForEditor(propBodyRef.current);
+      const restored = normalizeBodyForEditor(propBodyRef.current);
       if (el.innerHTML !== restored) el.innerHTML = restored;
       return;
     }

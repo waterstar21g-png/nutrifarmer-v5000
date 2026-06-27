@@ -3,6 +3,8 @@ import { SESSION_COOKIE, SESSION_COOKIE_OPTS } from '@/lib/v5000-auth/config';
 import { withDatabase } from '@/lib/v5000-auth/api';
 import { readSessionFromCookies } from '@/lib/v5000-auth/session';
 import { findUserById } from '@/lib/v5000-auth/users';
+import { countPublishedPostsByAuthor } from '@/lib/v5000-content/posts';
+import { userMemberGrade } from '@/lib/v5000-auth/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +24,8 @@ export async function GET() {
     const user = await findUserById(session.userId);
     if (!user) return clearSessionResponse();
 
+    const publishedPostCount = await countPublishedPostsByAuthor(user.id);
+
     return NextResponse.json({
       loggedIn: true,
       user: {
@@ -29,6 +33,8 @@ export async function GET() {
         name: user.displayName,
         loginId: user.loginId,
         role: user.role,
+        memberGrade: userMemberGrade(user.role, publishedPostCount),
+        publishedPostCount,
         mustResetPassword: user.mustResetPassword,
       },
     });
