@@ -7,13 +7,13 @@
   },
   "version": "5.0.0.1",
   "label": "V5.0.0.1",
-  "commit": "c8d2ef0",
-  "commitFull": "c8d2ef02fdf1e06c56c60ae25fff152713a4d74c",
+  "commit": "68e2dfd",
+  "commitFull": "68e2dfd",
   "commitFeature": "bc070b5",
-  "deploymentId": "dpl_8ZfaTHVJtKDjbR9t9hR4V8ZQ3gfF",
+  "deploymentId": "dpl_7ttDMWm2fKjAszxYWmarypEzNueb",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
   "summary": "Write editor all text +60% (×1.6)",
-  "updatedAt": "2026-06-28T02:30:00+09:00"
+  "updatedAt": "2026-06-28T02:35:00+09:00"
 }
