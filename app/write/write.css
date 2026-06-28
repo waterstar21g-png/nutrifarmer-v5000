@@ -2445,3 +2445,82 @@ html {
 .nfw-draft-col .nfw-field--body .nfw-body-rich {
   font-size: var(--nfw-fs-body) !important;
 }
+
+/* ══════════════════════════════════════════════
+   사용자 요청 2026-06-28 — AI글쓰기 버튼·이미지 최종 보정
+══════════════════════════════════════════════ */
+
+/* 1. 사진/이미지 미리보기: 높이와 가로 폭을 20% 축소 */
+.nfw-photo-preview {
+  width: 80% !important;
+  max-height: 144px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+.nfw-photo-preview__img {
+  max-width: 80% !important;
+  max-height: 144px !important;
+}
+
+/* 2~3. 배포/게시·게시글보기·게시글 가져오기·임시저장: 사진/이미지 버튼 규격 + 청색/흰색 */
+.nfw-draft__head-actions .nfw-publish-action-btn {
+  width: var(--nfw-phase1-btn-w) !important;
+  min-width: var(--nfw-phase1-btn-w) !important;
+  max-width: var(--nfw-phase1-btn-w) !important;
+  min-height: 0 !important;
+  padding: var(--nfw-phase1-btn-pad-y) 0.45em !important;
+  border-radius: 999px !important;
+  border: 1px solid #1a5fa8 !important;
+  background: #1a5fa8 !important;
+  color: #fff !important;
+}
+.nfw-draft__head-actions .nfw-publish-action-btn:hover:not(:disabled) {
+  border-color: #0f2744 !important;
+  background: #0f2744 !important;
+  color: #fff !important;
+}
+
+/* 4. AI 버튼: 가는 오렌지 테두리 */
+.nfw-ai-sidebar .nfw-ai-sidebar__open-btn,
+.nfw-ai-sidebar .nfw-ai-side-btn,
+.nfw-ai-sidebar .nfw-ai-side-btn.is-active,
+.nfw-ai-sidebar .nfw-ai-side-btn--images,
+.nfw-ai-sidebar .nfw-ai-side-btn--images:hover {
+  border: 1px solid #c05621 !important;
+}
+
+/* 5. 좌측 상단 주요 버튼: 굵은 검정 테두리 */
+.nfw-topbar__left .nfw-topbar__home-btn,
+.nfw-topbar__left .nfw-topbar__badge,
+.nfw-topbar__left .nfw-topbar__phase {
+  border: 2px solid #000 !important;
+}
+
+/* 6. 사용자명·등급: 타원형/바탕 없이 흰색 글씨만 */
+.nfw-topbar .nf-auth-chip--user {
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #fff !important;
+}
+.nfw-topbar .nf-auth-chip--user .nf-auth-chip__role,
+.nfw-topbar .nf-auth-chip--user .nf-auth-chip__role--admin,
+.nfw-topbar .nf-auth-chip--user .nf-auth-chip__role--regular,
+.nfw-topbar .nf-auth-chip--user .nf-auth-chip__role--star {
+  color: #fff !important;
+}
+
+/* 7. 로그아웃: 가로 30% 증가 + 오렌지 바탕 + 흰색 글씨 */
+.nfw-topbar .nf-auth-chip--logout {
+  padding-left: 0.39rem !important;
+  padding-right: 0.39rem !important;
+  border-color: #c05621 !important;
+  background: #c05621 !important;
+  color: #fff !important;
+}
+.nfw-topbar .nf-auth-chip--logout:hover {
+  border-color: #a04918 !important;
+  background: #a04918 !important;
+  color: #fff !important;
+}

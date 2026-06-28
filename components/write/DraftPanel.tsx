@@ -215,16 +215,16 @@ export function DraftPanel({
         <div className="nfw-draft__head-actions">
           {phase === 'finalize' && (
             <>
-              <button type="button" className="nfw-btn nfw-btn--sm nfw-btn--primary" onClick={goPreview}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-btn--primary nfw-publish-action-btn" onClick={goPreview}>
                 배포/게시
               </button>
-              <button type="button" className="nfw-btn nfw-btn--sm" onClick={() => void handleViewPost()}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-publish-action-btn" onClick={() => void handleViewPost()}>
                 게시글보기
               </button>
-              <button type="button" className="nfw-btn nfw-btn--sm" onClick={openPicker}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-publish-action-btn" onClick={openPicker}>
                 게시글 가져오기
               </button>
-              <button type="button" className="nfw-btn nfw-btn--sm" onClick={onSave}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-publish-action-btn" onClick={onSave}>
                 임시저장
               </button>
             </>

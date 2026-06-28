@@ -5,14 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.10",
-  "label": "V5.0.0.10",
-  "commit": "10b233c",
-  "commitFull": "10b233cc64eea15db9287608f2632a4c81e464e6",
-  "deploymentId": "dpl_1Me47rx3iwB4GnScL5kjhgFryhCB",
+  "version": "5.0.0.11",
+  "label": "V5.0.0.11",
+  "commit": "",
+  "commitFull": "",
+  "deploymentId": "dpl_9ydsamis55tfn3ExkrFJ34vLkwWU",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Align latest/program sections to family album sizing · footer links route to latest single posts",
-  "updatedAt": "2026-06-28T14:53:00+09:00"
+  "summary": "AI write image/button/auth topbar styling adjustments",
+  "updatedAt": "2026-06-28T15:10:00+09:00"
 }
