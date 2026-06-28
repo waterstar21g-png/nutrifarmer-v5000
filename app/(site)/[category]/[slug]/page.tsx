@@ -126,12 +126,7 @@ export default async function PostPage({ params, searchParams }: Props) {
     <div className="nf-single-page nf-single-compact">
       <SinglePostFromWrite />
 
-      <div className="nf-post-banner nf-post-banner--tall nf-single-banner-band" id="nf-single-banner-band">
-        {displayImgUrl && (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={displayImgUrl} alt={title} className="nf-post-banner__bg" />
-        )}
-        <div className="nf-post-banner__overlay" aria-hidden="true" />
+      <div className="nf-post-banner nf-single-banner-band" id="nf-single-banner-band">
         <div className="nf-post-banner__content">
           <h1 className="nf-post-banner__title">{title}</h1>
           <div className="nf-post-banner__meta">
@@ -149,6 +144,13 @@ export default async function PostPage({ params, searchParams }: Props) {
 
       <div className="nf-single-layout nf-single-main-wide">
         <article className="nf-single-main">
+          {displayImgUrl && (
+            <div className="nf-single__thumb" aria-label={`${title} 대표이미지`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={displayImgUrl} alt={title} />
+            </div>
+          )}
+
           {bodyHtml.replace(/<[^>]+>/g, '').trim().length > 0 && (
             <div
               className="wp-content nf-single-body"

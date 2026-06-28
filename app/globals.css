@@ -31,6 +31,8 @@
   --nf-muted:      #4a5568;
   --nf-top-bar-h:  2.1rem;
   --nf-nav-bar-h:  2.94rem;
+  --nf-header-h:   calc(var(--nf-top-bar-h) + var(--nf-nav-bar-h));
+  --nf-banner-h:   calc(var(--nf-header-h) * 1.2);
   /* 전체화면 섹션 공통 수평 패딩 */
   --nf-px:         clamp(1.25rem, 3.5vw, 3rem);
   /* 공통 — 바탕 투명 · 글씨 검정 (글쓰기·단일글·헤더 카테고리) */
@@ -86,7 +88,7 @@ body {
   gap: 0.5rem;
 }
 .nf-top-bar__tagline {
-  font-size: clamp(0.36rem, 0.55vw, 0.425rem);
+  font-size: 0.4rem;
   font-weight: 500;
   color: rgba(255,255,255,0.92);
   white-space: nowrap;
@@ -107,8 +109,11 @@ body {
   color: #fff;
   background: rgba(255,255,255,0.28);
 }
+.nf-top-bar__social-wrap .nf-nav-bar__social-label {
+  font-size: 0.6rem;
+}
 .nf-top-bar__links {
-  font-size: clamp(0.51rem, 0.84vw, 0.63rem);
+  font-size: 0.6rem;
   font-weight: 600;
   color: #fff;
   text-align: center;
@@ -233,7 +238,7 @@ body {
   align-items: center;
   padding: 0.3rem clamp(0.36rem, 0.72vw, 0.6rem);
   border-radius: 20px;
-  font-size: clamp(0.656rem, 0.76vw, 0.8rem);
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--nf-muted);
   text-decoration: none;
@@ -253,7 +258,7 @@ body {
   color: var(--nf-accent);
   background: transparent;
   font-weight: 800;
-  font-size: clamp(0.722rem, 0.836vw, 0.88rem);
+  font-size: 0.8rem;
 }
 .nf-nav-bar__actions {
   display: flex;
@@ -439,7 +444,7 @@ body {
   border: none;
   border-radius: 20px;
   padding: 0.21rem 0.85rem;
-  font-size: 0.576rem;
+  font-size: 0.8rem;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -958,6 +963,12 @@ body {
   position: relative;
   background: #e8eef5;
 }
+.nf-single__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .nf-single__back {
   display: inline-flex;
   align-items: center;
@@ -1112,7 +1123,7 @@ body {
   margin-right: auto;
 }
 
-/* 단일글 상단 배너 */
+/* 단일글 상단 배너 — 그라데이션 전용 (대표이미지는 본문 위) */
 .nf-post-banner {
   position: relative;
   height: 220px;
@@ -1120,12 +1131,19 @@ body {
   margin-bottom: 0;
   background: var(--nf-primary);
 }
-.nf-post-banner--tall {
-  min-height: clamp(280px, 38vh, 450px);
-  height: auto;
+.nf-post-banner.nf-single-banner-band {
+  height: var(--nf-banner-h);
+  min-height: unset;
+  background: linear-gradient(135deg, var(--nf-primary) 0%, var(--nf-blue) 100%);
 }
-.nf-post-banner--tall .nf-post-banner__content {
-  min-height: clamp(280px, 38vh, 450px);
+.nf-post-banner.nf-single-banner-band .nf-post-banner__title {
+  font-size: 1.3rem;
+}
+.nf-post-banner.nf-single-banner-band .nf-post-banner__meta {
+  font-size: 0.6rem;
+}
+.nf-post-banner.nf-single-banner-band .nf-post-banner__cat {
+  font-size: 0.8rem;
 }
 .nf-post-banner__bg {
   position: absolute;
@@ -1281,7 +1299,7 @@ body {
   border-radius: 3px;
   color: var(--nf-primary);
   text-decoration: none;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   line-height: 1.35;
   font-weight: 500;
   transition: background 0.12s, color 0.12s;
@@ -1308,7 +1326,7 @@ body {
 .nf-sidebar-post-list .nf-sidebar-post-item.is-active.is-match > a.nf-sidebar-post-link:hover {
   color: var(--nf-accent) !important;
   background: transparent !important;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   font-weight: 800;
   border-left: none !important;
   opacity: 1 !important;
@@ -2398,10 +2416,22 @@ a.nf-preview-card-link:hover,
 }
 .nf-feature--alt { background: #fff; }
 
-/* 방금 올린 이야기들 — 카드 폰트 개별 조정 */
-.nf-feature--alt .nf-gallery-card__title { font-size: 0.532rem; } /* 0.76 × 0.7 */
-.nf-feature--alt .nf-gallery-card__date  { font-size: 0.392rem; } /* 0.56 × 0.7 */
-.nf-feature--alt .nf-gallery-card__excerpt { font-size: 0.522rem; } /* 본문 +50% */
+/* 최신 글 · 프로그램 주제 — 카드 폰트 */
+.nf-feature--alt .nf-gallery-card__title,
+.nf-home-latest-cards .nf-gallery-card__title {
+  font-size: 0.6rem;
+}
+.nf-feature--alt .nf-gallery-card__excerpt,
+.nf-home-latest-cards .nf-gallery-card__excerpt {
+  font-size: 0.4rem;
+}
+.nf-feature--alt .nf-gallery-card__date,
+.nf-home-latest-cards .nf-gallery-card__date {
+  font-size: 0.4rem;
+}
+.nf-feature__head--topic {
+  margin-top: 2.5rem;
+}
 .nf-feature__inner { width: 100%; padding: 0 12.5%; }
 .nf-feature__head { margin-bottom: 1.75rem; }
 .nf-feature__section-label {
@@ -2779,7 +2809,7 @@ a.nf-preview-card-link:hover,
 .nf-nav-bar__cat.is-active,
 .nf-top-cat-btn.is-active {
   color: var(--nf-accent) !important;
-  font-size: clamp(0.78rem, 0.92vw, 0.95rem) !important;
+  font-size: 0.8rem !important;
   font-weight: 900 !important;
 }
 
@@ -2791,7 +2821,7 @@ a.nf-preview-card-link:hover,
 .nf-sidebar-post-list .nf-sidebar-post-item.is-active.is-match > a.nf-sidebar-post-link,
 .nf-sidebar-post-list .nf-sidebar-post-item.is-active.is-match > a.nf-sidebar-post-link:hover {
   color: var(--nf-accent) !important;
-  font-size: 0.62rem !important;
+  font-size: 0.7rem !important;
   font-weight: 800 !important;
 }
 .nf-sidebar-post-item.is-active {

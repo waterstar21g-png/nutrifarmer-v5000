@@ -5,14 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.7",
-  "label": "V5.0.0.7",
+  "version": "5.0.0.8",
+  "label": "V5.0.0.8",
   "commit": "97851e8",
   "commitFull": "97851e8",
-  "deploymentId": "dpl_oyQcgTk8QFqokaYQkbpfson4apSX",
+  "deploymentId": "dpl_6tETrRj4g88fTPnCEjhyJEgm8KGU",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Restore old WP single-post image banner (title·date·category on bg)",
-  "updatedAt": "2026-06-28T15:00:00+09:00"
+  "summary": "Banner without hero overlay · rem typography · scroll to banner on single post",
+  "updatedAt": "2026-06-28T15:30:00+09:00"
 }

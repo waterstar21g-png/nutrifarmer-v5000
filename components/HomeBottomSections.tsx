@@ -6,14 +6,12 @@ import { LatestPostsSection } from '@/components/LatestPostsSection';
 interface Props {
   postsBySlug: Record<string, PreviewPost[]>;
   latestPosts: PreviewPost[];
-  topicLabel?: string;
   topicPosts?: PreviewPost[];
 }
 
 export function HomeBottomSections({
   postsBySlug,
   latestPosts,
-  topicLabel,
   topicPosts,
 }: Props) {
   return (
@@ -72,7 +70,6 @@ export function HomeBottomSections({
           </div>
           <LatestPostsSection
             posts={latestPosts}
-            topicLabel={topicLabel}
             topicPosts={topicPosts}
           />
         </div>

@@ -70,8 +70,6 @@ export default async function HomePage({ searchParams }: Props) {
     SHOWCASE_CATS.map(c => [c.slug, heroPostsRaw[c.slug]?.[0] ?? null]),
   ) as Record<string, import('@/lib/home-posts').PreviewPost | null>;
 
-  const topicLabel = topicPosts.length > 0 ? '프로그램 기록 · 주제 선택' : undefined;
-
   return (
     <>
       <HomePreviewData postsBySlug={postsBySlug} />
@@ -97,7 +95,6 @@ export default async function HomePage({ searchParams }: Props) {
       <HomeBottomSections
         postsBySlug={postsBySlug}
         latestPosts={latestPosts}
-        topicLabel={topicLabel}
         topicPosts={topicPosts}
       />
     </>
