@@ -3008,3 +3008,51 @@ html {
 .nfw-app .nfw-phase1-bar__lead .nfw-main-mode-btn:hover {
   border: 1px solid var(--nfw-v5016-sky-border) !important;
 }
+
+/* V5.0.0.19 — 최상단 AI글쓰기 창 타이틀바 높이 50% 확대 */
+.nfw-app {
+  --nfw-bar-h: 41.4px;
+}
+
+/* V5.0.0.20 — AI응답창 테두리·스크롤, 상단 버튼 테두리·구분선 제거 */
+.nfw-app {
+  --nfw-v5020-sky-thin: #dff6ff;
+}
+
+/* AI 응답창 — 하단 테두리 명확화 + 길어지면 세로 스크롤 */
+.nfw-app .nfw-phase2-body--write .nfw-chat__log.nfw-chat__log--flex {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  flex-shrink: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  border-top: 1px solid #cbd5e1 !important;
+  border-bottom: 2px solid #64748b !important;
+  background: #fafbfc !important;
+  box-sizing: border-box !important;
+}
+
+/* 상단 4개 버튼 + 새글쓰기 — 매우 가늘고 옅은 하늘색 테두리 */
+.nfw-app .nfw-phase1-bar .nfw-main-mode-btn,
+.nfw-app .nfw-phase1-bar .nfw-main-mode-btn.is-active,
+.nfw-app .nfw-phase1-bar .nfw-main-mode-btn:hover,
+.nfw-app .nfw-phase1-bar__lead .nfw-main-mode-btn,
+.nfw-app .nfw-phase1-bar__lead .nfw-main-mode-btn.is-active,
+.nfw-app .nfw-phase1-bar__lead .nfw-main-mode-btn:hover {
+  border: 1px solid var(--nfw-v5020-sky-thin) !important;
+}
+
+/* 새글쓰기 ↔ 사진/이미지 구분선 제거 */
+.nfw-app .nfw-phase1-bar__lead {
+  border-right: none !important;
+}
+
+/* 새글쓰기 ↔ AI 버튼열 구분선 제거 */
+.nfw-app .nfw-phase1-bar {
+  border-bottom: none !important;
+}
+.nfw-app .nfw-ai-sidebar {
+  border-top: none !important;
+}

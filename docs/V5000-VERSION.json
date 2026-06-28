@@ -5,14 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.18",
-  "label": "V5.0.0.18",
-  "commit": "395e678",
-  "commitFull": "395e67854f39e649f2bd4630ffc5c6bf2bfb069d",
-  "deploymentId": "dpl_8WvcoJ1GdJ2HJ5Fie2uAfGCuuKoL",
+  "version": "5.0.0.20",
+  "label": "V5.0.0.20",
+  "commit": "",
+  "commitFull": "",
+  "deploymentId": "dpl_FChpHTtBbai7fr1FysqBQarpAz8t",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Restore topbar HOME and move new draft to the left lead button slot",
-  "updatedAt": "2026-06-28T20:05:00+09:00"
+  "summary": "Write AI log border scroll and top button border seam fixes",
+  "updatedAt": "2026-06-28T21:50:00+09:00"
 }
