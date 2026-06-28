@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { PreviewPost } from '@/lib/home-posts';
+import { postHref } from '@/lib/post-href';
 
 const MAIN_CATS = [
   { slug: 'daily-life',       name: '일상 기록'   },
@@ -28,9 +29,15 @@ const FAMILY_CATS = [
 
 interface Props {
   recentPosts?: PreviewPost[];
+  postsBySlug?: Record<string, PreviewPost[]>;
 }
 
-export function SiteFooter({ recentPosts = [] }: Props) {
+function footerCategoryHref(slug: string, postsBySlug: Record<string, PreviewPost[]>): string {
+  const post = postsBySlug[slug]?.[0];
+  return post ? postHref(post.categorySlug, post.slug, post.pid ?? post.id) : '/';
+}
+
+export function SiteFooter({ recentPosts = [], postsBySlug = {} }: Props) {
   const recent = recentPosts.slice(0, 6);
 
   return (
@@ -51,7 +58,7 @@ export function SiteFooter({ recentPosts = [] }: Props) {
           <ul className="nf-footer__links">
             {MAIN_CATS.map(cat => (
               <li key={cat.slug}>
-                <Link href={`/${cat.slug}`}>{cat.name}</Link>
+                <Link href={footerCategoryHref(cat.slug, postsBySlug)}>{cat.name}</Link>
               </li>
             ))}
           </ul>
@@ -62,7 +69,7 @@ export function SiteFooter({ recentPosts = [] }: Props) {
           <ul className="nf-footer__links">
             {STORY_CATS.map(cat => (
               <li key={cat.slug + cat.name}>
-                <Link href={`/${cat.slug}`}>{cat.name}</Link>
+                <Link href={footerCategoryHref(cat.slug, postsBySlug)}>{cat.name}</Link>
               </li>
             ))}
           </ul>
@@ -73,7 +80,7 @@ export function SiteFooter({ recentPosts = [] }: Props) {
           <ul className="nf-footer__links">
             {FAMILY_CATS.map(cat => (
               <li key={cat.slug}>
-                <Link href={`/${cat.slug}`}>{cat.name}</Link>
+                <Link href={footerCategoryHref(cat.slug, postsBySlug)}>{cat.name}</Link>
               </li>
             ))}
           </ul>
@@ -85,12 +92,12 @@ export function SiteFooter({ recentPosts = [] }: Props) {
             {recent.length > 0
               ? recent.map(post => (
                   <li key={post.id}>
-                    <Link href={`/${post.categorySlug}/${post.slug}`}>{post.title}</Link>
+                    <Link href={postHref(post.categorySlug, post.slug, post.pid ?? post.id)}>{post.title}</Link>
                   </li>
                 ))
               : MAIN_CATS.slice(0, 6).map(cat => (
                   <li key={cat.slug + 'r'}>
-                    <Link href={`/${cat.slug}`}>{cat.name}</Link>
+                    <Link href={footerCategoryHref(cat.slug, postsBySlug)}>{cat.name}</Link>
                   </li>
                 ))
             }

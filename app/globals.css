@@ -2416,18 +2416,21 @@ a.nf-preview-card-link:hover,
 }
 .nf-feature--alt { background: #fff; }
 
-/* 최신 글 · 프로그램 주제 — 카드 폰트 */
-.nf-feature--alt .nf-gallery-card__title,
+/* 최신 글 · 프로그램 기록 — 가족 앨범 섹션 카드 기준으로 통일 */
+.nf-home-latest-cards {
+  gap: 1.25rem;
+  grid-auto-rows: auto;
+}
+.nf-home-latest-cards .nf-gallery-card__thumb {
+  flex: none;
+  aspect-ratio: 16 / 9;
+}
 .nf-home-latest-cards .nf-gallery-card__title {
-  font-size: 0.6rem;
+  font-size: 0.97rem;
 }
-.nf-feature--alt .nf-gallery-card__excerpt,
-.nf-home-latest-cards .nf-gallery-card__excerpt {
-  font-size: 0.4rem;
-}
-.nf-feature--alt .nf-gallery-card__date,
+.nf-home-latest-cards .nf-gallery-card__excerpt,
 .nf-home-latest-cards .nf-gallery-card__date {
-  font-size: 0.4rem;
+  font-size: 0.76rem;
 }
 .nf-feature__head--topic {
   margin-top: 2.5rem;

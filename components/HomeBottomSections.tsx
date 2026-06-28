@@ -63,10 +63,6 @@ export function HomeBottomSections({
           <div className="nf-feature__head">
             <span className="nf-feature__section-label">최신 글</span>
             <h2 className="nf-feature__title">방금 올린 이야기들</h2>
-            <p className="nf-feature__desc">
-              일상, 가족, 프로그램, 전문 글쓰기, 수익·뉴스 등<br />
-              8개 카테고리에서 최신 글을 확인하세요.
-            </p>
           </div>
           <LatestPostsSection
             posts={latestPosts}

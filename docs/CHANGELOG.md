@@ -16,6 +16,8 @@
 | **V5.0.0.6** | `449b6d5` | `dpl_A5fNQQzitzo3QUGBTFGarj1qMzgz` | 메뉴→최신 단일글 · 댓글 · 카테고리 4×2 제거 |
 | **V5.0.0.7** | `97851e8` | `dpl_oyQcgTk8QFqokaYQkbpfson4apSX` | 단일글 old WP 이미지 배너 복구 |
 | **V5.0.0.8** | `67dcac8` | `dpl_6tETrRj4g88fTPnCEjhyJEgm8KGU` | 배너·폰트 rem · 대표이미지 분리 · 배너 스크롤 |
+| **V5.0.0.9** | (combined) | `dpl_3aYsk2hX8shcPYgsXFWanUrKqcTF` | 최신 글·프로그램 섹션을 가족 앨범 기준 크기로 정렬 |
+| **V5.0.0.10** | (commit) | `dpl_1Me47rx3iwB4GnScL5kjhgFryhCB` | 푸터 링크를 최신 단일글 URL로 연결해 404 방지 |
 
 > **버전 파일:** `docs/V5000-VERSION.json` · **규칙:** V5 = 플랫폼 · MINOR = 공개 UI 배치 · PATCH = 글쓰기·도구 배치
 
