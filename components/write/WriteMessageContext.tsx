@@ -120,13 +120,10 @@ function WriteMessageDialog({
         <div
           className="nfw-write-dialog nfw-write-dialog--modal nfw-write-dialog--new-draft"
           role="alertdialog"
-          aria-labelledby="nfw-new-draft-title"
+          aria-label="새 글쓰기 확인"
           aria-describedby="nfw-new-draft-body"
           onClick={e => e.stopPropagation()}
         >
-          <div className="nfw-modal__head">
-            <h2 id="nfw-new-draft-title" className="nfw-modal__title">{screen}</h2>
-          </div>
           <div id="nfw-new-draft-body" className="nfw-modal__body">
             <p className="nfw-modal__message">본문에 작성중인 글이 있습니다.</p>
             <p className="nfw-modal__guide">

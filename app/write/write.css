@@ -2524,3 +2524,165 @@ html {
   background: #a04918 !important;
   color: #fff !important;
 }
+
+/* ══════════════════════════════════════════════
+   V5.0.0.13 — /write 버튼·입력창·새글쓰기 팝업 확정 보정
+══════════════════════════════════════════════ */
+.nfw-app {
+  --nfw-v5013-blue: #1a5fa8;
+  --nfw-v5013-orange: #c05621;
+  --nfw-v5013-sky: #eaf6ff;
+  --nfw-v5013-thin-black: #000;
+  --nfw-v5013-btn-y: 0.49em;
+}
+
+/* 1. 새글 쓰기·사진/이미지·동영상·파일/자료: 높이 30% 축소, 1행, 글씨 기준 너비 */
+.nfw-app .nfw-phase1-bar .nfw-phase1-btn,
+.nfw-app .nfw-phase1-bar .nfw-phase1-btn--new {
+  width: auto !important;
+  min-width: 5.7rem !important;
+  max-width: none !important;
+  padding: var(--nfw-v5013-btn-y) 0.8em !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+}
+
+/* 2~4. 우측 상단 4개 버튼: 사진/이미지 높이와 동일, 한 줄, 청색 바탕 + 흰색 */
+.nfw-app .nfw-draft__head-actions .nfw-publish-action-btn,
+.nfw-app .nfw-draft__head-actions .nfw-btn.nfw-publish-action-btn {
+  width: 7.4rem !important;
+  min-width: 7.4rem !important;
+  max-width: 7.4rem !important;
+  padding: var(--nfw-v5013-btn-y) 0.8em !important;
+  border: 1px solid var(--nfw-v5013-blue) !important;
+  border-radius: 999px !important;
+  background: var(--nfw-v5013-blue) !important;
+  color: #fff !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+}
+.nfw-app .nfw-draft__head-actions .nfw-publish-action-btn:hover:not(:disabled),
+.nfw-app .nfw-draft__head-actions .nfw-btn.nfw-publish-action-btn:hover:not(:disabled) {
+  border-color: #0f2744 !important;
+  background: #0f2744 !important;
+  color: #fff !important;
+}
+
+/* 5. AI 세로 버튼 전체: 가는 청색 테두리 */
+.nfw-app .nfw-ai-sidebar .nfw-ai-sidebar__open-btn,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn.is-active,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn--images,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn--images:hover,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn:hover,
+.nfw-app .nfw-ai-sidebar .nfw-ai-sidebar__open-btn:hover {
+  border: 1px solid var(--nfw-v5013-blue) !important;
+}
+
+/* 6. 좌측 상단 버튼 4개: 가는 검정색 테두리 */
+.nfw-app .nfw-topbar__left .nfw-topbar__home-btn,
+.nfw-app .nfw-topbar__left .nfw-topbar__badge,
+.nfw-app .nfw-topbar__left .nfw-topbar__phase,
+.nfw-app .nfw-topbar__left .nfw-topbar__doc-title {
+  border: 1px solid var(--nfw-v5013-thin-black) !important;
+}
+
+/* 7. 사용자명/등급: 타원형·바탕색 제거, 흰색 글씨만 */
+.nfw-app .nfw-topbar .nf-auth-chip--user {
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #fff !important;
+}
+.nfw-app .nfw-topbar .nf-auth-chip--user .nf-auth-chip__role,
+.nfw-app .nfw-topbar .nf-auth-chip--user .nf-auth-chip__role--admin,
+.nfw-app .nfw-topbar .nf-auth-chip--user .nf-auth-chip__role--regular,
+.nfw-app .nfw-topbar .nf-auth-chip--user .nf-auth-chip__role--star {
+  color: #fff !important;
+}
+
+/* 8. 로그아웃: 가로 30% 증가, 오렌지 바탕, 흰색 */
+.nfw-app .nfw-topbar .nf-auth-chip--logout {
+  padding-left: 0.39rem !important;
+  padding-right: 0.39rem !important;
+  border-color: var(--nfw-v5013-orange) !important;
+  background: var(--nfw-v5013-orange) !important;
+  color: #fff !important;
+}
+.nfw-app .nfw-topbar .nf-auth-chip--logout:hover {
+  border-color: #a04918 !important;
+  background: #a04918 !important;
+  color: #fff !important;
+}
+
+/* 9. 우측 본문에 추가: 오렌지 바탕, 흰색 */
+.nfw-app .nfw-tmpl-actions .nfw-btn,
+.nfw-app .nfw-tmpl-actions .nfw-btn.nfw-btn--primary {
+  border-color: var(--nfw-v5013-orange) !important;
+  background: var(--nfw-v5013-orange) !important;
+  color: #fff !important;
+}
+
+/* 10. 검색·이미지/동영상/파일 설명 입력칸: 하늘색 바탕, 검정색 */
+.nfw-app .nfw-media-form__label-box,
+.nfw-app .nfw-media-form__url,
+.nfw-app .nfw-media-form__desc-wrap .nfw-tmpl-input {
+  background: var(--nfw-v5013-sky) !important;
+  color: #000 !important;
+}
+.nfw-app .nfw-media-form__url::placeholder,
+.nfw-app .nfw-media-form__desc-wrap .nfw-tmpl-input::placeholder {
+  color: rgba(0, 0, 0, 0.58) !important;
+}
+
+/* 11. 내부·외부 버튼: 오렌지 바탕, 흰색 */
+.nfw-app .nfw-media-form__btn-stack .nfw-media-form__search-btn {
+  border-color: var(--nfw-v5013-orange) !important;
+  background: var(--nfw-v5013-orange) !important;
+  color: #fff !important;
+}
+.nfw-app .nfw-media-form__btn-stack .nfw-media-form__search-btn:hover {
+  border-color: #a04918 !important;
+  background: #a04918 !important;
+  color: #fff !important;
+}
+
+/* 새글쓰기 확인 팝업: 제목 삭제, 메시지 2줄, 버튼 1행·동일 너비·30% 높이 축소 */
+.nfw-write-dialog--new-draft {
+  width: min(15.5rem, 92vw) !important;
+}
+.nfw-write-dialog--new-draft .nfw-modal__head {
+  display: none !important;
+}
+.nfw-write-dialog--new-draft .nfw-modal__body {
+  padding: 1rem 1.25rem 0.45rem !important;
+}
+.nfw-write-dialog--new-draft .nfw-modal__message,
+.nfw-write-dialog--new-draft .nfw-modal__guide {
+  margin: 0 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.55 !important;
+  color: #0f2744 !important;
+}
+.nfw-write-dialog--new-draft .nfw-modal__actions {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  justify-content: center !important;
+  gap: 0.35rem !important;
+  padding: 0.45rem 1.25rem 1rem !important;
+}
+.nfw-write-dialog--new-draft .nfw-modal__btn {
+  flex: 0 0 5.25rem !important;
+  width: 5.25rem !important;
+  min-width: 5.25rem !important;
+  min-height: 0 !important;
+  padding: 0.34rem 0.55rem !important;
+  line-height: 1.05 !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}

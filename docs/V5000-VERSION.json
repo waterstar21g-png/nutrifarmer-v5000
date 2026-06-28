@@ -5,14 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.12",
-  "label": "V5.0.0.12",
-  "commit": "519225a",
-  "commitFull": "519225a6affed4c73af07177fb4971f7d6e69fae",
-  "deploymentId": "dpl_DLxipKTh6FmDAh4CepiRKizGFbrH",
+  "version": "5.0.0.13",
+  "label": "V5.0.0.13",
+  "commit": "",
+  "commitFull": "",
+  "deploymentId": "dpl_ATdAyyc1xQgrJJFzxPPdJvbPBkWA",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Single/category banner alignment, comment form compact, clear on post switch",
-  "updatedAt": "2026-06-28T16:35:00+09:00"
+  "summary": "Write editor button, input, and new-draft popup style correction",
+  "updatedAt": "2026-06-28T17:10:00+09:00"
 }
