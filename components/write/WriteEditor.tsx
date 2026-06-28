@@ -81,6 +81,22 @@ const PHASE_LABEL: Record<WritePhase, string> = {
   preview: '4차 · 배포-미리보기',
 };
 
+type PublishedPostTarget = {
+  id: number;
+  slug: string;
+  categorySlug: string;
+  link: string;
+};
+
+function postTargetFromDto(post: V5000PostDto): PublishedPostTarget {
+  return {
+    id: post.id,
+    slug: post.slug,
+    categorySlug: post.categorySlug,
+    link: post.link,
+  };
+}
+
 export function WriteEditor() {
   return (
     <WriteMessageProvider>
@@ -100,6 +116,7 @@ function WriteEditorInner() {
   const layoutRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const lastPublishedRef = useRef<PublishedPostTarget | null>(null);
 
   useEffect(() => {
     bindWritePopupToOpener();
@@ -116,6 +133,14 @@ function WriteEditorInner() {
       const raw = localStorage.getItem(LS_DRAFT_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as DraftState;
+        if (parsed.postId && parsed.postSlug && parsed.categorySlug) {
+          lastPublishedRef.current = {
+            id: parsed.postId,
+            slug: parsed.postSlug,
+            categorySlug: parsed.categorySlug,
+            link: `/${parsed.categorySlug}/${parsed.postSlug}`,
+          };
+        }
         setDraft({
           ...EMPTY_DRAFT,
           ...parsed,
@@ -336,6 +361,7 @@ function WriteEditorInner() {
       if (!r.ok || !data.ok || !data.post) throw new Error(data.message ?? `HTTP ${r.status}`);
 
       const post = data.post;
+      lastPublishedRef.current = postTargetFromDto(post);
       setDraft(d => ({
         ...d,
         postId: post.id,
@@ -358,6 +384,7 @@ function WriteEditorInner() {
     } catch {
       /* ignore */
     }
+    lastPublishedRef.current = null;
     setStatusMsg('1차 · 새 글 쓰기 — 화면을 초기화했습니다.');
   }, []);
 
@@ -439,14 +466,16 @@ function WriteEditorInner() {
   }, []);
 
   const viewPublishedPost = useCallback(async (): Promise<{ ok: boolean; silent?: boolean }> => {
-    if (!draft.categorySlug && !draft.postId) {
+    const remembered = lastPublishedRef.current;
+    if (!draft.categorySlug && !draft.postId && !remembered) {
       setStatusMsg('⚠️ 카테고리를 선택해 주세요.');
       return { ok: false, silent: true };
     }
 
-    let categorySlug = draft.categorySlug;
-    let slug = draft.postSlug.trim();
-    let postId = draft.postId;
+    let categorySlug = draft.categorySlug || remembered?.categorySlug || '';
+    let slug = draft.postSlug.trim() || remembered?.slug || '';
+    let postId = draft.postId ?? remembered?.id ?? null;
+    let directLink = remembered?.link;
 
     try {
       const r = await fetch(
@@ -464,14 +493,20 @@ function WriteEditorInner() {
           setStatusMsg('⚠️ 게시된 글이 없습니다. 먼저 게시하기를 실행해 주세요.');
           return { ok: false, silent: true };
         }
+        const target = postTargetFromDto(data.post as V5000PostDto);
+        lastPublishedRef.current = target;
         categorySlug = data.post.categorySlug || categorySlug;
         slug = data.post.slug;
         postId = data.post.id;
+        directLink = data.post.link;
       } else if (!postId && r.ok && data.ok && Array.isArray(data.posts) && data.posts.length > 0) {
         const latest = data.posts[0] as V5000PostDto;
+        const target = postTargetFromDto(latest);
+        lastPublishedRef.current = target;
         categorySlug = latest.categorySlug || categorySlug;
         slug = latest.slug;
         postId = latest.id;
+        directLink = latest.link;
       }
       if (slug && postId) {
         setDraft(d => ({
@@ -483,6 +518,12 @@ function WriteEditorInner() {
       }
     } catch {
       /* draft에 저장된 slug·postId 로 진행 */
+    }
+
+    if ((!slug || !categorySlug) && directLink) {
+      goToMainPostView(directLink);
+      setStatusMsg(`👁 방금 게시글 → ${directLink}`);
+      return { ok: true };
     }
 
     if (!slug || !categorySlug) {
@@ -522,6 +563,7 @@ function WriteEditorInner() {
             onInsertImage={insertImage}
             onInsertVideo={insertVideo}
             onInsertFile={insertFile}
+            onHome={goToMainHome}
             onNewDraft={newDraft}
             onAiApply={handleAiApply}
             onRecommendImages={recommendImages}

@@ -215,29 +215,29 @@ export function DraftPanel({
         <div className="nfw-draft__head-actions">
           {phase === 'finalize' && (
             <>
-              <button type="button" className="nfw-btn nfw-btn--sm nfw-btn--primary nfw-publish-action-btn" onClick={goPreview}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-btn--primary nfw-publish-action-btn nfw-write-action-btn" onClick={goPreview}>
                 배포/게시
               </button>
-              <button type="button" className="nfw-btn nfw-btn--sm nfw-publish-action-btn" onClick={() => void handleViewPost()}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-publish-action-btn nfw-write-action-btn" onClick={() => void handleViewPost()}>
                 게시글보기
               </button>
-              <button type="button" className="nfw-btn nfw-btn--sm nfw-publish-action-btn" onClick={openPicker}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-publish-action-btn nfw-write-action-btn" onClick={openPicker}>
                 게시글 가져오기
               </button>
-              <button type="button" className="nfw-btn nfw-btn--sm nfw-publish-action-btn" onClick={onSave}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-publish-action-btn nfw-write-action-btn" onClick={onSave}>
                 임시저장
               </button>
             </>
           )}
           {phase === 'preview' && (
             <>
-              <button type="button" className="nfw-btn nfw-btn--sm nfw-btn--primary" onClick={onPublish}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-btn--primary nfw-write-action-btn" onClick={onPublish}>
                 게시하기
               </button>
-              <button type="button" className="nfw-btn nfw-btn--sm" onClick={() => void handleViewPost()}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-write-action-btn" onClick={() => void handleViewPost()}>
                 게시글보기
               </button>
-              <button type="button" className="nfw-btn nfw-btn--sm" onClick={onBackToFinalize}>
+              <button type="button" className="nfw-btn nfw-btn--sm nfw-write-action-btn" onClick={onBackToFinalize}>
                 글 수정하기
               </button>
             </>

@@ -2780,3 +2780,167 @@ html {
   background: var(--nfw-v5014-orange) !important;
   color: #fff !important;
 }
+
+/* ══════════════════════════════════════════════
+   V5.0.0.15 — /write 실제 버튼 class 기준 색상 재보정
+══════════════════════════════════════════════ */
+.nfw-app {
+  --nfw-v5015-sky: #eef9ff;
+  --nfw-v5015-green: #ecfdf3;
+  --nfw-v5015-orange-dark: #9a3412;
+}
+
+/* 좌측 상단 4개: 아주 옅은 녹색 바탕 + 검정 글씨 */
+.nfw-app .nfw-main-mode-btn,
+.nfw-app .nfw-main-mode-btn.is-active,
+.nfw-app .nfw-main-mode-btn:hover {
+  border-color: #86cfa3 !important;
+  background: var(--nfw-v5015-green) !important;
+  color: #000 !important;
+}
+
+/* 우측 상단 버튼: 흰색 바탕 + 검정 글씨 + 진한 주황 테두리 */
+.nfw-app .nfw-write-action-btn,
+.nfw-app .nfw-write-action-btn.nfw-btn--primary,
+.nfw-app .nfw-write-action-btn:hover:not(:disabled),
+.nfw-app .nfw-write-action-btn.nfw-btn--primary:hover:not(:disabled) {
+  border-color: var(--nfw-v5015-orange-dark) !important;
+  background: #fff !important;
+  color: #000 !important;
+}
+
+/* AI 세로 버튼: 아주 옅은 하늘색 바탕 + 검정 글씨 */
+.nfw-app .nfw-ai-sidebar .nfw-ai-sidebar__open-btn,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn.is-active,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn--images,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn--images:hover,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn:hover,
+.nfw-app .nfw-ai-sidebar .nfw-ai-sidebar__open-btn:hover {
+  border-color: #9bd5f0 !important;
+  background: var(--nfw-v5015-sky) !important;
+  color: #000 !important;
+}
+
+/* V5.0.0.15 — 첨부 레이아웃 기준 최종 버튼 배치·폰트 보정 */
+.nfw-app {
+  --nfw-ai-sidebar-w: 132px;
+  --nfw-v5015-border-green: #2cab35;
+  --nfw-v5015-home-bg: #ffe0ca;
+}
+
+/* 기존 최상단 HOME은 버튼 영역 HOME과 중복되므로 숨김 */
+.nfw-app .nfw-topbar__home-btn {
+  display: none !important;
+}
+
+.nfw-app .nfw-phase1-bar {
+  background: #fff !important;
+  border: 2px solid #d9d9d9 !important;
+  border-bottom-width: 2px !important;
+}
+.nfw-app .nfw-phase1-bar__lead {
+  flex: 0 0 var(--nfw-ai-sidebar-w) !important;
+  width: var(--nfw-ai-sidebar-w) !important;
+  padding: 0.9rem 0.7rem !important;
+  border-right: 2px solid #d9d9d9 !important;
+  background: #fff !important;
+}
+.nfw-app .nfw-phase1-bar__rest {
+  padding: 0.9rem 0.7rem !important;
+  gap: 0.35rem !important;
+  background: #fff !important;
+}
+
+.nfw-app .nfw-phase1-btn,
+.nfw-app .nfw-main-mode-btn,
+.nfw-app .nfw-ai-side-btn,
+.nfw-app .nfw-ai-sidebar__open-btn {
+  height: 2.42rem !important;
+  min-height: 2.42rem !important;
+  border: 2px solid var(--nfw-v5015-border-green) !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  color: #000 !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+.nfw-app .nfw-phase1-btn--home {
+  width: 6.3rem !important;
+  min-width: 6.3rem !important;
+  max-width: 6.3rem !important;
+  background: var(--nfw-v5015-home-bg) !important;
+}
+.nfw-app .nfw-main-mode-btn,
+.nfw-app .nfw-main-mode-btn.is-active,
+.nfw-app .nfw-main-mode-btn:hover {
+  width: 6.4rem !important;
+  min-width: 6.4rem !important;
+  max-width: 6.4rem !important;
+  background: #fff !important;
+  color: #000 !important;
+}
+
+.nfw-app .nfw-ai-sidebar {
+  width: var(--nfw-ai-sidebar-w) !important;
+  flex: 0 0 var(--nfw-ai-sidebar-w) !important;
+  padding: 2.15rem 0.45rem 0.55rem !important;
+  gap: 0.38rem !important;
+  background: #fff !important;
+  border: 2px solid #d9d9d9 !important;
+  border-top: none !important;
+  overflow-y: auto !important;
+}
+.nfw-app .nfw-ai-side-btn,
+.nfw-app .nfw-ai-side-btn.is-active,
+.nfw-app .nfw-ai-side-btn--images,
+.nfw-app .nfw-ai-side-btn:hover,
+.nfw-app .nfw-ai-side-btn--images:hover {
+  width: 100% !important;
+  background: #fff !important;
+  color: #000 !important;
+  border-color: var(--nfw-v5015-border-green) !important;
+}
+.nfw-app .nfw-ai-sidebar__open-btn,
+.nfw-app .nfw-ai-sidebar__open-btn:hover {
+  width: 100% !important;
+  margin-top: auto !important;
+  background: #fff !important;
+  color: #000 !important;
+  border-color: var(--nfw-v5015-border-green) !important;
+}
+
+/* 화면 내 라벨/제목/입력그리드 글자 0.8rem */
+.nfw-app :is(
+  .nfw-draft__phase-label,
+  .nfw-field__label,
+  .nfw-field__input,
+  .nfw-body-rich,
+  .nfw-prompt-grid__label,
+  .nfw-media-form__label-box,
+  .nfw-tmpl-input,
+  .nfw-media-form__url,
+  .nfw-media-form__preview,
+  .nfw-insert-rail__label,
+  .nfw-insert-rail__toggle,
+  .nfw-btn,
+  .nfw-write-action-btn,
+  .nfw-panel-empty,
+  .nfw-chat__empty
+) {
+  font-size: 0.8rem !important;
+}
+
+/* 명령문 입력창만 0.6rem */
+.nfw-app .nfw-prompt-grid .nfw-input,
+.nfw-app .nfw-prompt-grid .nfw-input::placeholder {
+  font-size: 0.6rem !important;
+}

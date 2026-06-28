@@ -5,14 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.14",
-  "label": "V5.0.0.14",
-  "commit": "f591c0c",
-  "commitFull": "f591c0c30bf42dd7408c7a033706ae857d17faf5",
-  "deploymentId": "dpl_9vmDm6BeN7nRagGwBcSeJnaSe2jd",
+  "version": "5.0.0.15",
+  "label": "V5.0.0.15",
+  "commit": "",
+  "commitFull": "",
+  "deploymentId": "dpl_2hWFymj3MMvx89fDhMt18JevfDay",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Topbar, banner, single image viewport, and write button refinements",
-  "updatedAt": "2026-06-28T17:45:00+09:00"
+  "summary": "Stabilize write post view action and align write button layout and font sizes",
+  "updatedAt": "2026-06-28T19:20:00+09:00"
 }

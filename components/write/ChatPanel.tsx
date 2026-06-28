@@ -32,6 +32,7 @@ interface Props {
   onInsertImage: (payload: { url: string; alt: string; descFontSize: number }) => void;
   onInsertVideo: (payload: { url: string; title: string; descFontSize: number }) => void;
   onInsertFile: (payload: { url: string; name: string; descFontSize: number }) => void;
+  onHome: () => void;
   onNewDraft: () => boolean | Promise<boolean>;
   onAiApply: (text: string, cmdId: AiCmdId) => void;
   onRecommendImages: () => Promise<string>;
@@ -61,7 +62,7 @@ function buildSideButtons(): SideBtn[] {
 
 export function ChatPanel({
   draft, onInsertImage, onInsertVideo, onInsertFile,
-  onNewDraft, onAiApply, onRecommendImages, imageRecommendLoading,
+  onHome, onNewDraft, onAiApply, onRecommendImages, imageRecommendLoading,
 }: Props) {
   const [mode, setMode] = useState<MaterialMode>('write');
   const [turns, setTurns] = useState<AiTurn[]>([]);
@@ -209,18 +210,21 @@ export function ChatPanel({
     <div className="nfw-chat">
       <div className="nfw-phase1-bar">
         <div className="nfw-phase1-bar__lead">
-          <button type="button" className={`nfw-phase1-btn nfw-phase1-btn--new${mode === 'write' ? ' is-active' : ''}`} onClick={() => void startNewWrite()}>
-            새글 쓰기
+          <button type="button" className="nfw-phase1-btn nfw-phase1-btn--home" onClick={onHome}>
+            HOME
           </button>
         </div>
         <div className="nfw-phase1-bar__rest">
-        <button type="button" className={`nfw-phase1-btn${mode === 'photo' ? ' is-active' : ''}`} onClick={() => onMaterial('photo')}>
+        <button type="button" className={`nfw-phase1-btn nfw-main-mode-btn nfw-phase1-btn--new${mode === 'write' ? ' is-active' : ''}`} onClick={() => void startNewWrite()}>
+          새글 쓰기
+        </button>
+        <button type="button" className={`nfw-phase1-btn nfw-main-mode-btn${mode === 'photo' ? ' is-active' : ''}`} onClick={() => onMaterial('photo')}>
           사진/이미지
         </button>
-        <button type="button" className={`nfw-phase1-btn${mode === 'video' ? ' is-active' : ''}`} onClick={() => onMaterial('video')}>
+        <button type="button" className={`nfw-phase1-btn nfw-main-mode-btn${mode === 'video' ? ' is-active' : ''}`} onClick={() => onMaterial('video')}>
           동영상
         </button>
-        <button type="button" className={`nfw-phase1-btn${mode === 'file' ? ' is-active' : ''}`} onClick={() => onMaterial('file')}>
+        <button type="button" className={`nfw-phase1-btn nfw-main-mode-btn${mode === 'file' ? ' is-active' : ''}`} onClick={() => onMaterial('file')}>
           파일/자료
         </button>
         </div>
@@ -228,14 +232,6 @@ export function ChatPanel({
 
       <div className="nfw-phase2">
         <aside className="nfw-ai-sidebar" aria-label="AI 명령">
-          <button
-            type="button"
-            className="nfw-ai-sidebar__open-btn"
-            onClick={openAiCommandsWindow}
-            title="AI 버튼 — 명령문 조회/변경 (새 창)"
-          >
-            2차 AI명령
-          </button>
           {sideButtons.map(c => (
             <button
               key={c.id}
@@ -250,6 +246,14 @@ export function ChatPanel({
               {c.action === 'recommend-images' && imageRecommendLoading ? '검색 중…' : c.label}
             </button>
           ))}
+          <button
+            type="button"
+            className="nfw-ai-sidebar__open-btn"
+            onClick={openAiCommandsWindow}
+            title="AI 버튼 — 명령문 조회/변경 (새 창)"
+          >
+            2차 AI명령
+          </button>
         </aside>
 
         <div className={`nfw-phase2-body${mode === 'write' ? ' nfw-phase2-body--write' : ''}`}>

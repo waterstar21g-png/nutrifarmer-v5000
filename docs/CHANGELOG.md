@@ -22,6 +22,7 @@
 | **V5.0.0.12** | `519225a` | `dpl_DLxipKTh6FmDAh4CepiRKizGFbrH` | 단일글·카테고리 배너 정렬 · 댓글 폼 축소 · 글 전환 시 입력 CLEAR |
 | **V5.0.0.13** | `d079194` | `dpl_ATdAyyc1xQgrJJFzxPPdJvbPBkWA` | AI글쓰기 버튼·입력창·새글쓰기 팝업 스타일 재보정 |
 | **V5.0.0.14** | `f591c0c` | `dpl_9vmDm6BeN7nRagGwBcSeJnaSe2jd` | 탑바·배너·단일글 대표이미지·글쓰기 버튼 후속 보정 |
+| **V5.0.0.15** | (commit) | `dpl_2hWFymj3MMvx89fDhMt18JevfDay` | 글쓰기 게시글보기 안정화 · 버튼 배치·색상·글자 크기 재보정 |
 
 > **버전 파일:** `docs/V5000-VERSION.json` · **규칙:** V5 = 플랫폼 · MINOR = 공개 UI 배치 · PATCH = 글쓰기·도구 배치
 

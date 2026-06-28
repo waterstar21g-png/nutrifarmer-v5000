@@ -224,8 +224,7 @@ export function openWriteWindow(): void {
 export function goToMainPostView(path: string): void {
   if (typeof window === 'undefined') return;
 
-  const base = path.startsWith('/') ? path : `/${path}`;
-  const url = new URL(base, window.location.origin);
+  const url = new URL(path, window.location.origin);
   url.searchParams.set('from', 'write');
   const target = `${url.pathname}${url.search}`;
 
@@ -233,13 +232,13 @@ export function goToMainPostView(path: string): void {
 
   if (opener && !opener.closed) {
     registerWritePopupOnOpener(window, opener);
-    hideWritePopup(window);
     try {
       opener.location.assign(target);
     } catch {
       opener.location.href = target;
     }
     opener.focus();
+    window.setTimeout(() => hideWritePopup(window), 120);
     return;
   }
 
