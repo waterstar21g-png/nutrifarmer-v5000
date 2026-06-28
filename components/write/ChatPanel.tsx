@@ -36,6 +36,7 @@ interface Props {
   onNewDraft: () => boolean | Promise<boolean>;
   onAiApply: (text: string, cmdId: AiCmdId) => void;
   onRecommendImages: () => Promise<string>;
+  onPromptSubmitReady: (submit: () => void) => void;
   imageRecommendLoading?: boolean;
 }
 
@@ -62,7 +63,7 @@ function buildSideButtons(): SideBtn[] {
 
 export function ChatPanel({
   draft, onInsertImage, onInsertVideo, onInsertFile,
-  onHome, onNewDraft, onAiApply, onRecommendImages, imageRecommendLoading,
+  onHome, onNewDraft, onAiApply, onRecommendImages, onPromptSubmitReady, imageRecommendLoading,
 }: Props) {
   const [mode, setMode] = useState<MaterialMode>('write');
   const [turns, setTurns] = useState<AiTurn[]>([]);
@@ -158,12 +159,16 @@ export function ChatPanel({
   };
 
   /** 전송 — 사용자 입력을 AI에 보내고 결과를 우측 창에 반영 */
-  const sendPrompt = () => {
+  const sendPrompt = useCallback(() => {
     const text = input.trim();
     if (!text || aiLoading) return;
     runAi(text, `일반명령문: ${text.slice(0, 40)}${text.length > 40 ? '…' : ''}`, 'prompt', true);
     setInput('');
-  };
+  }, [aiLoading, input, runAi]);
+
+  useEffect(() => {
+    onPromptSubmitReady(sendPrompt);
+  }, [onPromptSubmitReady, sendPrompt]);
 
   const startNewWrite = useCallback(async () => {
     const ok = await Promise.resolve(onNewDraft());
@@ -278,9 +283,6 @@ export function ChatPanel({
                       }}
                     />
                     <div className="nfw-prompt-grid__actions">
-                      <button type="button" className="nfw-btn nfw-btn--primary nfw-btn--sm" disabled={aiLoading || !input.trim()} onClick={sendPrompt}>
-                        전송 → 우측
-                      </button>
                       <button
                         type="button"
                         className="nfw-btn nfw-btn--sm"

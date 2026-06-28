@@ -5,14 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.15",
-  "label": "V5.0.0.15",
-  "commit": "fd98f38",
-  "commitFull": "fd98f382b737c82eb1325a679db0f71aab6b2bce",
-  "deploymentId": "dpl_2hWFymj3MMvx89fDhMt18JevfDay",
+  "version": "5.0.0.16",
+  "label": "V5.0.0.16",
+  "commit": "",
+  "commitFull": "",
+  "deploymentId": "dpl_94d9rKiwrBtgXYGCSb12FaJt12fu",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Stabilize write post view action and align write button layout and font sizes",
-  "updatedAt": "2026-06-28T19:20:00+09:00"
+  "summary": "Move prompt submit to insert rail and refine write button borders",
+  "updatedAt": "2026-06-28T19:45:00+09:00"
 }

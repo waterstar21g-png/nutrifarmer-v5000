@@ -9,9 +9,10 @@ interface Props {
   position: InsertPosition;
   onChange: (position: InsertPosition) => void;
   onResizeStart: (e: React.MouseEvent) => void;
+  onSendToDraft: () => void;
 }
 
-export function WriteInsertRail({ position, onChange, onResizeStart }: Props) {
+export function WriteInsertRail({ position, onChange, onResizeStart, onSendToDraft }: Props) {
   return (
     <div className="nfw-insert-rail" aria-label="본문 삽입 위치">
       <div className="nfw-insert-rail__pos">
@@ -32,6 +33,15 @@ export function WriteInsertRail({ position, onChange, onResizeStart }: Props) {
               {INSERT_POSITION_LABEL[p]}
             </button>
           ))}
+          <button
+            type="button"
+            className="nfw-insert-rail__send"
+            onClick={onSendToDraft}
+            aria-label="일반명령문을 우측 본문에 반영"
+            title="일반명령문 전송 후 우측 본문에 반영"
+          >
+            →
+          </button>
         </div>
       </div>
       <div

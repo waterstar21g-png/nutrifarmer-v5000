@@ -2944,3 +2944,47 @@ html {
 .nfw-app .nfw-prompt-grid .nfw-input::placeholder {
   font-size: 0.6rem !important;
 }
+
+/* V5.0.0.16 — HOME/AI/상단버튼 테두리와 위치지정 전송 버튼 */
+.nfw-app {
+  --nfw-v5016-sky-border: #bfefff;
+  --nfw-v5016-home-orange: #f97316;
+}
+
+.nfw-app .nfw-phase1-btn--home {
+  border: 1px solid var(--nfw-v5016-sky-border) !important;
+  background: var(--nfw-v5016-home-orange) !important;
+  color: #fff !important;
+}
+
+.nfw-app .nfw-main-mode-btn,
+.nfw-app .nfw-main-mode-btn.is-active,
+.nfw-app .nfw-main-mode-btn:hover {
+  border: 1px solid var(--nfw-v5016-sky-border) !important;
+}
+
+.nfw-app .nfw-ai-sidebar {
+  border: 1px solid var(--nfw-v5016-sky-border) !important;
+  border-top: none !important;
+}
+
+.nfw-app .nfw-insert-rail__send {
+  width: 2.35rem !important;
+  height: 1.65rem !important;
+  padding: 0 !important;
+  border: 1px solid var(--nfw-v5016-sky-border) !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: #0f2744 !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.nfw-app .nfw-insert-rail__send:hover {
+  background: #eef9ff !important;
+}

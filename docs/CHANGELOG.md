@@ -23,6 +23,7 @@
 | **V5.0.0.13** | `d079194` | `dpl_ATdAyyc1xQgrJJFzxPPdJvbPBkWA` | AI글쓰기 버튼·입력창·새글쓰기 팝업 스타일 재보정 |
 | **V5.0.0.14** | `f591c0c` | `dpl_9vmDm6BeN7nRagGwBcSeJnaSe2jd` | 탑바·배너·단일글 대표이미지·글쓰기 버튼 후속 보정 |
 | **V5.0.0.15** | `fd98f38` | `dpl_2hWFymj3MMvx89fDhMt18JevfDay` | 글쓰기 게시글보기 안정화 · 버튼 배치·색상·글자 크기 재보정 |
+| **V5.0.0.16** | (commit) | `dpl_94d9rKiwrBtgXYGCSb12FaJt12fu` | 글쓰기 HOME·AI·상단 버튼 테두리 보정 · 위치지정 화살표 전송 추가 |
 
 > **버전 파일:** `docs/V5000-VERSION.json` · **규칙:** V5 = 플랫폼 · MINOR = 공개 UI 배치 · PATCH = 글쓰기·도구 배치
 

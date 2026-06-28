@@ -117,6 +117,7 @@ function WriteEditorInner() {
   const bodyRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const lastPublishedRef = useRef<PublishedPostTarget | null>(null);
+  const promptSubmitRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     bindWritePopupToOpener();
@@ -543,9 +544,6 @@ function WriteEditorInner() {
     <div className="nfw-app">
       <header className="nfw-topbar">
         <div className="nfw-topbar__left">
-          <button type="button" className="nfw-topbar__home-btn" onClick={goToMainHome}>
-            HOME
-          </button>
           <span className="nfw-topbar__badge">✨ AI 글쓰기</span>
           <span className="nfw-topbar__phase">{PHASE_LABEL[phase]}</span>
           {draft.title && <span className="nfw-topbar__doc-title">{draft.title}</span>}
@@ -567,6 +565,9 @@ function WriteEditorInner() {
             onNewDraft={newDraft}
             onAiApply={handleAiApply}
             onRecommendImages={recommendImages}
+            onPromptSubmitReady={submit => {
+              promptSubmitRef.current = submit;
+            }}
             imageRecommendLoading={previewLoading}
           />
         </div>
@@ -575,6 +576,7 @@ function WriteEditorInner() {
           position={insertPosition}
           onChange={setInsertPosition}
           onResizeStart={onSplitDown}
+          onSendToDraft={() => promptSubmitRef.current()}
         />
 
         <div className="nfw-draft-col" style={{ flexBasis: `${100 - splitPct}%`, maxWidth: `${100 - splitPct}%` }}>
