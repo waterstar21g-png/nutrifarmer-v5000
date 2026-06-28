@@ -5,14 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.13",
-  "label": "V5.0.0.13",
-  "commit": "d079194",
-  "commitFull": "d079194abe089b845fd925c208be602642023b67",
-  "deploymentId": "dpl_ATdAyyc1xQgrJJFzxPPdJvbPBkWA",
+  "version": "5.0.0.14",
+  "label": "V5.0.0.14",
+  "commit": "",
+  "commitFull": "",
+  "deploymentId": "dpl_9vmDm6BeN7nRagGwBcSeJnaSe2jd",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Write editor button, input, and new-draft popup style correction",
-  "updatedAt": "2026-06-28T17:10:00+09:00"
+  "summary": "Topbar, banner, single image viewport, and write button refinements",
+  "updatedAt": "2026-06-28T17:45:00+09:00"
 }

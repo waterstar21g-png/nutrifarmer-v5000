@@ -3063,3 +3063,55 @@ a.nf-preview-card-link:hover,
   flex-shrink: 0;
   padding: 0.42rem 1rem !important;
 }
+
+/* ══════════════════════════════════════════════
+   V5.0.0.14 — 배너·단일글 대표이미지·탑바 보정
+══════════════════════════════════════════════ */
+
+/* 탑바: 중앙 제목 좌측 이동, 폰트 재조정, SNS 아이콘 1rem */
+.nf-top-bar__tagline {
+  font-size: 0.6rem !important;
+}
+.nf-top-bar__links {
+  font-size: 0.7rem !important;
+  transform: translateX(-2.8rem);
+}
+.nf-top-bar__social-wrap .nf-nav-bar__social-link svg {
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
+/* 메인/카테고리/단일글 배너: 현재 V5.0.0.12 기준보다 25% 축소 */
+.nf-page-banner,
+.nf-post-banner.nf-single-banner-band {
+  height: calc(var(--nf-header-h) * 0.75) !important;
+  min-height: calc(var(--nf-header-h) * 0.75) !important;
+}
+.nf-home-hero-block {
+  min-height: calc((100dvh - var(--nf-top-bar-h) - var(--nf-nav-bar-h)) * 0.75) !important;
+}
+.nf-hero {
+  padding-top: 3rem !important;
+  padding-bottom: 3rem !important;
+}
+
+/* 단일글: 대표이미지와 본문 5줄이 한 화면에 들어오도록 이미지 높이 제한 */
+.nf-single__thumb {
+  aspect-ratio: auto !important;
+  height: min(42vw, calc(100dvh - var(--nf-top-bar-h) - var(--nf-nav-bar-h) - (0.9rem * 1.25) - (0.7rem * 1.8 * 5) - 3.5rem)) !important;
+  min-height: 180px;
+  margin-bottom: 0.75rem !important;
+}
+.nf-single__thumb img {
+  object-fit: cover;
+}
+.nf-single-body {
+  margin-top: 0 !important;
+}
+
+/* 카테고리 대표이미지도 같은 화면 노출 기준에 맞춰 과도한 높이를 제한 */
+.nf-cat-single-hero {
+  min-height: 0 !important;
+  height: min(42vw, calc(100dvh - var(--nf-top-bar-h) - var(--nf-nav-bar-h) - (0.9rem * 1.25) - (0.75rem * 5) - 3.5rem)) !important;
+  margin-bottom: 0.75rem !important;
+}

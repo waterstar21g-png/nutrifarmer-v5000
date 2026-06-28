@@ -2686,3 +2686,97 @@ html {
   white-space: nowrap !important;
   word-break: keep-all !important;
 }
+
+/* ══════════════════════════════════════════════
+   V5.0.0.14 — /write 버튼 폭·색상·정중앙 정렬·위치 토글 보정
+══════════════════════════════════════════════ */
+.nfw-app {
+  --nfw-v5014-green: #15803d;
+  --nfw-v5014-orange: #c05621;
+  --nfw-v5014-blue: #1a5fa8;
+  --nfw-v5014-btn-h: 1.46rem;
+  --nfw-v5014-btn-gap-y: calc(var(--nfw-v5014-btn-h) * 0.5);
+}
+
+/* 최상단 버튼줄: 버튼 높이의 50%만큼 상·하 여백 */
+.nfw-app .nfw-phase1-bar__lead,
+.nfw-app .nfw-phase1-bar__rest {
+  padding-top: var(--nfw-v5014-btn-gap-y) !important;
+  padding-bottom: var(--nfw-v5014-btn-gap-y) !important;
+}
+.nfw-app .nfw-draft__head {
+  padding-top: var(--nfw-v5014-btn-gap-y) !important;
+  padding-bottom: var(--nfw-v5014-btn-gap-y) !important;
+}
+
+/* 공통: 버튼 내부 글씨를 세로/가로 정중앙에 고정 */
+.nfw-app .nfw-phase1-bar .nfw-phase1-btn,
+.nfw-app .nfw-draft__head-actions .nfw-publish-action-btn,
+.nfw-app .nfw-ai-sidebar .nfw-ai-sidebar__open-btn,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn,
+.nfw-app .nfw-insert-rail__toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: var(--nfw-v5014-btn-h) !important;
+  min-height: var(--nfw-v5014-btn-h) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+/* 좌측 상단 4개 버튼: 너비 50% 축소 기준 + 1줄 유지, 녹색 바탕/흰색 */
+.nfw-app .nfw-phase1-bar .nfw-phase1-btn,
+.nfw-app .nfw-phase1-bar .nfw-phase1-btn--new,
+.nfw-app .nfw-phase1-bar .nfw-phase1-btn.is-active {
+  width: 4.05rem !important;
+  min-width: 4.05rem !important;
+  max-width: 4.05rem !important;
+  border-color: var(--nfw-v5014-green) !important;
+  background: var(--nfw-v5014-green) !important;
+  color: #fff !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+}
+
+/* 우측 상단 4개 버튼: 너비 50% 축소 기준 + 긴 문구 1줄 유지 */
+.nfw-app .nfw-draft__head-actions .nfw-publish-action-btn,
+.nfw-app .nfw-draft__head-actions .nfw-btn.nfw-publish-action-btn {
+  width: 4.9rem !important;
+  min-width: 4.9rem !important;
+  max-width: 4.9rem !important;
+  font-size: 0.54rem !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+}
+
+/* AI 버튼: 오렌지 바탕 + 흰색 */
+.nfw-app .nfw-ai-sidebar .nfw-ai-sidebar__open-btn,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn.is-active,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn--images,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn--images:hover,
+.nfw-app .nfw-ai-sidebar .nfw-ai-side-btn:hover,
+.nfw-app .nfw-ai-sidebar .nfw-ai-sidebar__open-btn:hover {
+  border-color: var(--nfw-v5014-orange) !important;
+  background: var(--nfw-v5014-orange) !important;
+  color: #fff !important;
+}
+
+/* 위치 지정 3개 버튼: 명확한 토글 상태 */
+.nfw-app .nfw-insert-rail__toggle {
+  width: 2.5rem !important;
+  min-width: 2.5rem !important;
+  border: 1px solid var(--nfw-v5014-blue) !important;
+  background: #fff !important;
+  color: var(--nfw-v5014-blue) !important;
+}
+.nfw-app .nfw-insert-rail__toggle.is-on,
+.nfw-app .nfw-insert-rail__toggle[aria-pressed="true"] {
+  border-color: var(--nfw-v5014-orange) !important;
+  background: var(--nfw-v5014-orange) !important;
+  color: #fff !important;
+}
