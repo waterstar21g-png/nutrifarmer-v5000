@@ -25,7 +25,7 @@
 | **V5.0.0.15** | `fd98f38` | `dpl_2hWFymj3MMvx89fDhMt18JevfDay` | 글쓰기 게시글보기 안정화 · 버튼 배치·색상·글자 크기 재보정 |
 | **V5.0.0.16** | `5db7918` | `dpl_94d9rKiwrBtgXYGCSb12FaJt12fu` | 글쓰기 HOME·AI·상단 버튼 테두리 보정 · 위치지정 화살표 전송 추가 |
 | **V5.0.0.17** | `11e4f55` | `dpl_8GrRcGtvz7wir2QerFci9N3mJLjR` | 글쓰기 우측 상단 4개 버튼 글자 크기·바다색 바탕 보정 |
-| **V5.0.0.18** | (commit) | `dpl_8WvcoJ1GdJ2HJ5Fie2uAfGCuuKoL` | 글쓰기 기존 HOME 복원 · 신규 HOME 제거 · 새글쓰기 좌측 이동 |
+| **V5.0.0.18** | `395e678` | `dpl_8WvcoJ1GdJ2HJ5Fie2uAfGCuuKoL` | 글쓰기 기존 HOME 복원 · 신규 HOME 제거 · 새글쓰기 좌측 이동 |
 
 > **버전 파일:** `docs/V5000-VERSION.json` · **규칙:** V5 = 플랫폼 · MINOR = 공개 UI 배치 · PATCH = 글쓰기·도구 배치
 
