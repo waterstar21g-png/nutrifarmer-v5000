@@ -29,11 +29,16 @@
 | **V5.0.0.19** | `b97e78f` | `dpl_3QnBkgkGQP8Y5o6d37nfWd2igBVp` | 글쓰기 최상단 타이틀바 높이 50% 확대 |
 | **V5.0.0.20** | `b97e78f` | `dpl_FChpHTtBbai7fr1FysqBQarpAz8t` | AI응답창 테두리·스크롤 · 상단 버튼 테두리·구분선 보정 |
 
+### 문서 (2026-06-29)
+
+- **`docs/V5000-V6000-platform-relationship.md`** — V5000·V6000 분리/공유 범위 및 요구사항 **통합·개별** 수용 규칙 확정
+
 > **버전 파일:** `docs/V5000-VERSION.json` · **규칙:** V5 = 플랫폼 · MINOR = 공개 UI 배치 · PATCH = 글쓰기·도구 배치
 
 ---
 
 > **Spec:** [`docs/V5000-native-platform-spec.md`](V5000-native-platform-spec.md)  
+> **V6000 관계:** [`docs/V5000-V6000-platform-relationship.md`](V5000-V6000-platform-relationship.md)  
 > **상태:** Phase C·D 완료 (2026-06-27) · git `d1448c8` · prod tag `prod-canonical-2026-06-27` → `dpl_CANs…`
 
 > 본 CHANGELOG는 **V5000**(`nutrifarmer-v5000`) 전용. V3000/V4000은 마이그레이션·참조 언급 시에만 기록.
