@@ -5,15 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.5",
-  "label": "V5.0.0.5",
-  "commit": "7d8fdab",
-  "commitFull": "7d8fdab",
-  "commitFeature": "e60a42d",
-  "deploymentId": "dpl_ADmtX3FVBvru9E4rZkjP3Ex6Vhk1",
+  "version": "5.0.0.6",
+  "label": "V5.0.0.6",
+  "commit": "",
+  "commitFull": "",
+  "deploymentId": "dpl_A5fNQQzitzo3QUGBTFGarj1qMzgz",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Write buttons: AI 80px/0.5em/gap 0.3rem · phase1 100px/0.7em · oval light-gray bold",
-  "updatedAt": "2026-06-28T10:56:31+09:00"
+  "summary": "Nav→latest single post · comments (old WP form) · remove category 4×2",
+  "updatedAt": "2026-06-28T14:30:00+09:00"
 }

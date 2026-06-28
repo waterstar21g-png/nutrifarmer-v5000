@@ -9,6 +9,7 @@ import { getSidebarPosts } from '@/lib/site-content';
 import {
   findPublishedPostById,
   findPublishedPostBySlug,
+  listPublishedByCategory,
 } from '@/lib/v5000-content/posts';
 import type { V5000PostRow } from '@/lib/v5000-content/schema';
 import { SHOWCASE_CATS } from '@/lib/site-data';
@@ -17,6 +18,8 @@ import { rewriteHtmlMediaUrls } from '@/lib/v5000-content/media-mirror';
 import { Suspense } from 'react';
 import { SidebarSearch } from '@/components/SidebarSearch';
 import { SinglePostFromWrite } from '@/components/SinglePostFromWrite';
+import { PostComments } from '@/components/PostComments';
+import { PostAdjacentNav } from '@/components/PostAdjacentNav';
 
 interface Props {
   params: Promise<{ category: string; slug: string }>;
@@ -94,13 +97,24 @@ export default async function PostPage({ params, searchParams }: Props) {
 
   const cat = getSiteCategory(canonicalCat)
     ?? SHOWCASE_CATS.find(c => c.slug === category);
-  const [rawBodyHtml, sidePosts] = await Promise.all([
+  const [rawBodyHtml, sidePosts, catPosts] = await Promise.all([
     rewriteHtmlMediaUrls(post.body),
     getSidebarPosts(canonicalCat),
+    listPublishedByCategory(canonicalCat, 100),
   ]);
   const displayImgUrl = firstImageFromBody(rawBodyHtml);
   const bodyHtml = displayImgUrl ? removeFirstImageBlock(rawBodyHtml) : rawBodyHtml;
   const title = post.title;
+
+  const idx = catPosts.findIndex(p => p.id === post.id);
+  const older = idx >= 0 && idx < catPosts.length - 1 ? catPosts[idx + 1] : null;
+  const newer = idx > 0 ? catPosts[idx - 1] : null;
+  const prevPost = older
+    ? { id: older.id, slug: older.slug, categorySlug: older.categorySlug, title: older.title }
+    : null;
+  const nextPost = newer
+    ? { id: newer.id, slug: newer.slug, categorySlug: newer.categorySlug, title: newer.title }
+    : null;
 
   return (
     <div className="nf-single-page nf-single-compact">
@@ -135,6 +149,10 @@ export default async function PostPage({ params, searchParams }: Props) {
               dangerouslySetInnerHTML={{ __html: bodyHtml }}
             />
           )}
+
+          <PostAdjacentNav prev={prevPost} next={nextPost} />
+
+          <PostComments postId={post.id} />
 
           {cat && (
             <Link href={`/${cat.slug}`} className="nf-single__back">

@@ -14,6 +14,8 @@ import { openWriteWindow } from '@/lib/write-popup';
 
 import { closeAllHomePreviews } from '@/lib/home-preview-bus';
 
+import { postHref } from '@/lib/post-href';
+
 import { HeaderSearch } from '@/components/HeaderSearch';
 
 import { HeaderSocialIcons } from '@/components/HeaderSocialIcons';
@@ -62,11 +64,43 @@ export function SiteHeader({ activeSlug }: Props) {
 
 
 
-  function onNavCat(slug: string) {
+  async function onNavCat(slug: string) {
 
     setMenuOpen(false);
 
     closeAllHomePreviews();
+
+    try {
+
+      const res = await fetch(
+
+        `/api/v5000/posts/latest?category_slug=${encodeURIComponent(slug)}`,
+
+        { cache: 'no-store' },
+
+      );
+
+      const data = await res.json() as {
+
+        ok?: boolean;
+
+        post?: { id: number; slug: string; categorySlug: string };
+
+      };
+
+      if (res.ok && data.ok && data.post) {
+
+        router.push(postHref(data.post.categorySlug, data.post.slug, data.post.id));
+
+        return;
+
+      }
+
+    } catch {
+
+      /* fallback below */
+
+    }
 
     router.push(`/${slug}`);
 

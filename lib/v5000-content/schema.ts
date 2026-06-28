@@ -50,7 +50,21 @@ export const v5000MediaMirror = pgTable('v5000_media_mirror', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const v5000Comments = pgTable('v5000_comments', {
+  id: serial('id').primaryKey(),
+  postId: integer('post_id')
+    .notNull()
+    .references(() => v5000Posts.id, { onDelete: 'cascade' }),
+  authorName: varchar('author_name', { length: 200 }).notNull(),
+  authorEmail: varchar('author_email', { length: 320 }).notNull(),
+  authorUrl: varchar('author_url', { length: 1024 }),
+  body: text('body').notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('approved'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type V5000PostRow = typeof v5000Posts.$inferSelect;
 export type NewV5000PostRow = typeof v5000Posts.$inferInsert;
 export type V5000MediaRow = typeof v5000Media.$inferSelect;
 export type V5000MediaMirrorRow = typeof v5000MediaMirror.$inferSelect;
+export type V5000CommentRow = typeof v5000Comments.$inferSelect;
