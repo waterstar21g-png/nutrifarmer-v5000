@@ -5,15 +5,15 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.1",
-  "label": "V5.0.0.1",
-  "commit": "68e2dfd",
-  "commitFull": "68e2dfd",
-  "commitFeature": "bc070b5",
-  "deploymentId": "dpl_7ttDMWm2fKjAszxYWmarypEzNueb",
+  "version": "5.0.0.5",
+  "label": "V5.0.0.5",
+  "commit": "local-uncommitted",
+  "commitFull": "local-uncommitted",
+  "commitFeature": "local-uncommitted",
+  "deploymentId": "dpl_ADmtX3FVBvru9E4rZkjP3Ex6Vhk1",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Write editor all text +60% (×1.6)",
-  "updatedAt": "2026-06-28T02:35:00+09:00"
+  "summary": "Write buttons: AI 80px/0.5em/gap 0.3rem · phase1 100px/0.7em · oval light-gray bold",
+  "updatedAt": "2026-06-28T10:56:31+09:00"
 }

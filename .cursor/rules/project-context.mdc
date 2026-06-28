@@ -14,10 +14,14 @@ alwaysApply: true
 - **원본 참조**: https://www.nutrifarmer.kr/
 - **기술 스택**: Next.js 15 + TypeScript + Tailwind CSS + Vercel + **Vercel Postgres** + Cloudflare R2
 
-## 배포 정책 (필수 — 2026-06-27 갱신)
-- **코드 변경 작업이 끝나면 사용자에게 묻지 말고 자동 배포** (단, **커밋 선행**)
-- 순서: `npm run build` → **git commit** → `vercel --prod --yes` → CHANGELOG·dpl ID 보고
-- **예외**: 사용자가 "배포하지 마" / "로컬만" / "커밋하지 마" 명시, 또는 빌드 실패
+## 배포 정책 (필수 — 2026-06-28 갱신, **묻지 말고 실행**)
+
+1. 코드 수정 → (필요 시) `npm run build`
+2. `vercel --prod --yes` → www 확인
+3. **즉시** `git commit` + `git push` + `docs/일별_사용자요건/SR_doc_*.md`
+4. `docs/V5000-VERSION.json` 갱신 (`abcSynced: true`)
+
+- **예외**: 「배포하지 마」/「로컬만」/「커밋하지 마」 명시, 또는 빌드 실패
 - **상세**: `.cursor/rules/deploy-git-versioning.mdc`
 
 ## 배포 명령

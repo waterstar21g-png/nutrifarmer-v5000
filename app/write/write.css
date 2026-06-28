@@ -1,10 +1,9 @@
 /* ══════════════════════════════════════════════
-   NFW Write Editor — 전용 스타일 v2
-   /write 전체 글자 60% 확대 (현재 × 1.6) — 라벨·버튼·입력·본문 포함
+   NFW Write Editor — write.css (/write 전용)
+   타이포 spec (기준 1rem): 본문 0.8 · 제목 0.7 · 버튼·라벨 0.6 · 그리드설명 0.4 · AI echo 0.4
 ══════════════════════════════════════════════ */
 html {
-  --nfw-font-scale: 1.6;
-  font-size: calc(70% * var(--nfw-font-scale));
+  font-size: 100%;
 }
 .nfw-app {
   display: flex;
@@ -12,37 +11,41 @@ html {
   height: 100dvh;
   background: #f0f4f8;
   font-family: var(--font-noto, 'Noto Sans KR', sans-serif);
-  font-size: calc(14px * 0.7 * var(--nfw-font-scale));
-  /* 본문·글쓰기 — 좌·우 본문 2배, 굵고 선명 */
-  --nfw-fs-body: calc(0.32rem * 2);
-  --nfw-fs-body-sm: calc(0.272rem * 2);
-  --nfw-fs-preview-title: calc(0.42rem * 2);
+  font-size: var(--nfw-fs-ui);
+  /* ── 글쓰기창 확정 rem (기준 1rem) ── */
+  --nfw-fs-body: 0.8rem;
+  --nfw-fs-title: 0.7rem;
+  --nfw-fs-btn: 0.6rem;
+  --nfw-fs-ui: 0.6rem;
+  --nfw-fs-grid-guide: 0.4rem;
+  --nfw-fs-ai-echo: 0.4rem;
+  /* legacy aliases → spec 토큰 */
+  --nfw-fs-body-sm: var(--nfw-fs-ui);
+  --nfw-fs-preview-title: var(--nfw-fs-title);
+  --nfw-bar-fs: var(--nfw-fs-ui);
+  --nfw-bar-fs-sm: var(--nfw-fs-ui);
+  --nfw-uni-fs: var(--nfw-fs-ui);
+  --nfw-ai-side-fs: var(--nfw-fs-btn);
+  --nfw-phase1-btn-fs: var(--nfw-fs-btn);
+  --nfw-fs-readable-min: var(--nfw-fs-grid-guide);
+  --nfw-meta-fs-scale: 1;
   --nfw-bar-h: 27.6px;
   --nfw-bar-pad-y: 0.21rem;
   --nfw-bar-pad-x: 0.39rem;
-  --nfw-bar-fs: 0.468rem;
-  --nfw-bar-fs-sm: 0.432rem;
   --nfw-bar-border: 1.2px;
   --nfw-bar-radius: 3.6px;
   --nfw-bar-btn-pad-y: 0.192rem;
   --nfw-bar-btn-pad-x: 0.45rem;
-  /* 버튼·라벨 통일 — 「새글 쓰기」(nfw-bar-fs)의 120% */
-  --nfw-uni-fs: calc(var(--nfw-bar-fs) * 1.2);
-  /* 그리드 안내 — 가독 최소(bar-fs-sm) 위 2단계(0.03rem × 2) */
-  --nfw-fs-readable-min: var(--nfw-bar-fs-sm);
-  --nfw-fs-grid-guide: calc(var(--nfw-fs-readable-min) + 0.03rem + 0.03rem);
-  /* 변경 구분 — 현재 대비 70% */
   --nfw-rev-fs-scale: 0.7;
-  /* 카테고리·제목·요약 — 입력/목록 그리드 */
-  --nfw-meta-fs-scale: 0.6;
-  /* 좌측 AI 명령 열 — 새글 쓰기 버튼과 동일 너비 */
-  --nfw-ai-sidebar-w: 71px;
-  --nfw-ai-side-btn-h: 1.68rem;
-  --nfw-ai-side-fs: calc(var(--nfw-uni-fs) * 0.55);
-  /* 1차 소재 바 — 새글쓰기·사진·동영상·파일 버튼 동일 크기 */
-  --nfw-phase1-btn-w: calc(var(--nfw-ai-sidebar-w) - 0.42rem);
-  --nfw-phase1-btn-h: var(--nfw-ai-side-btn-h);
-  --nfw-phase1-btn-fs: var(--nfw-ai-side-fs);
+  /* 버튼 레이아웃·스타일 */
+  --nfw-btn-fill: #e8ecf0;
+  --nfw-btn-fill-hover: #dce3ea;
+  --nfw-btn-text: #0f2744;
+  --nfw-ai-sidebar-w: 80px;
+  --nfw-ai-side-gap: 0.3rem;
+  --nfw-ai-side-btn-pad-y: 0.5em;
+  --nfw-phase1-btn-w: 100px;
+  --nfw-phase1-btn-pad-y: 0.7em;
 }
 
 /* ── 최상단 툴바 ── */
@@ -403,41 +406,52 @@ html {
 }
 .nfw-phase1-btn {
   width: var(--nfw-phase1-btn-w);
-  height: var(--nfw-phase1-btn-h);
   min-width: var(--nfw-phase1-btn-w);
-  min-height: var(--nfw-phase1-btn-h);
   max-width: var(--nfw-phase1-btn-w);
-  padding: 0;
-  border-radius: var(--nfw-bar-radius);
-  border: var(--nfw-bar-border) solid #dce5ef;
-  background: #fff;
-  color: #0f2744;
+  height: auto;
+  min-height: 0;
+  padding: var(--nfw-phase1-btn-pad-y) 0.45em;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: var(--nfw-btn-fill);
+  color: var(--nfw-btn-text);
   font-size: var(--nfw-phase1-btn-fs);
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   font-family: inherit;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  line-height: 1;
+  line-height: 1.15;
   letter-spacing: -0.04em;
   white-space: nowrap;
   box-sizing: border-box;
   flex-shrink: 0;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
-.nfw-phase1-btn:hover { background: #e8f0fe; border-color: #93c5fd; }
-.nfw-phase1-btn.is-active { background: #0f2744; color: #fff; border-color: #0f2744; }
+.nfw-phase1-btn:hover {
+  background: var(--nfw-btn-fill-hover);
+  border-color: #94a3b8;
+}
+.nfw-phase1-btn.is-active {
+  background: var(--nfw-btn-fill-hover);
+  color: var(--nfw-btn-text);
+  border-color: #1a5fa8;
+  font-weight: 800;
+}
 .nfw-phase1-btn--new {
-  border-color: #c05621;
-  color: #c05621;
+  border-color: #cbd5e1;
+  color: var(--nfw-btn-text);
 }
-.nfw-phase1-btn--new:hover { background: #fff5f0; }
+.nfw-phase1-btn--new:hover {
+  background: var(--nfw-btn-fill-hover);
+  border-color: #94a3b8;
+}
 .nfw-phase1-btn--new.is-active {
-  background: #0f2744;
-  color: #fff;
-  border-color: #0f2744;
+  background: var(--nfw-btn-fill-hover);
+  color: var(--nfw-btn-text);
+  border-color: #1a5fa8;
 }
 
 /* (덧붙이기 토글 제거 — 중앙 위치 지정 레일 사용) */
@@ -447,8 +461,8 @@ html {
   display: flex; flex: 1; min-height: 0; overflow: hidden;
 }
 .nfw-ai-sidebar {
-  width: var(--nfw-ai-sidebar-w); flex-shrink: 0; display: flex; flex-direction: column; gap: 0.168rem;
-  padding: 0.27rem 0.21rem; border-right: 1px solid #dce5ef; background: #f1f5f9;
+  width: var(--nfw-ai-sidebar-w); flex-shrink: 0; display: flex; flex-direction: column; gap: var(--nfw-ai-side-gap);
+  padding: 0.27rem 0.15rem; border-right: 1px solid #dce5ef; background: #f1f5f9;
   overflow-y: auto;
 }
 .nfw-ai-sidebar__label {
@@ -457,57 +471,67 @@ html {
 }
 .nfw-ai-sidebar__open-btn {
   width: 100%;
-  height: var(--nfw-ai-side-btn-h);
-  min-height: var(--nfw-ai-side-btn-h);
-  padding: 0 0.06rem;
+  height: auto;
+  min-height: 0;
+  padding: var(--nfw-ai-side-btn-pad-y) 0.35em;
   margin-bottom: 0;
-  border-radius: 4px;
-  border: 1.5px solid #c05621;
-  background: linear-gradient(180deg, #fdf8f3 0%, #fff 100%);
-  color: #c05621;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: var(--nfw-btn-fill);
+  color: var(--nfw-btn-text);
   font-size: var(--nfw-ai-side-fs);
   font-weight: 800;
   cursor: pointer;
   font-family: inherit;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  line-height: 1;
+  line-height: 1.15;
   letter-spacing: -0.04em;
   white-space: nowrap;
   box-sizing: border-box;
-  transition: background 0.12s, color 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 .nfw-ai-sidebar__open-btn:hover {
-  background: #c05621;
-  color: #fff;
+  background: var(--nfw-btn-fill-hover);
+  border-color: #94a3b8;
+  color: var(--nfw-btn-text);
 }
 .nfw-ai-side-btn {
   width: 100%;
-  height: var(--nfw-ai-side-btn-h);
-  min-height: var(--nfw-ai-side-btn-h);
-  padding: 0 0.06rem;
-  border-radius: 3px;
+  height: auto;
+  min-height: 0;
+  padding: var(--nfw-ai-side-btn-pad-y) 0.35em;
+  border-radius: 999px;
   border: 1px solid #cbd5e1;
-  background: #fff;
-  color: #0f2744;
+  background: var(--nfw-btn-fill);
+  color: var(--nfw-btn-text);
   font-size: var(--nfw-ai-side-fs);
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   font-family: inherit;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  line-height: 1;
+  line-height: 1.15;
   letter-spacing: -0.04em;
   white-space: nowrap;
   box-sizing: border-box;
-  transition: background 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
-.nfw-ai-side-btn:hover { background: #e8f0fe; border-color: #93c5fd; }
-.nfw-ai-side-btn.is-active { background: #1a5fa8; color: #fff; border-color: #1a5fa8; }
+.nfw-ai-side-btn:hover {
+  background: var(--nfw-btn-fill-hover);
+  border-color: #94a3b8;
+  color: var(--nfw-btn-text);
+}
+.nfw-ai-side-btn.is-active {
+  background: var(--nfw-btn-fill-hover);
+  color: var(--nfw-btn-text);
+  border-color: #1a5fa8;
+  font-weight: 800;
+}
 
 .nfw-phase2-body {
   flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden;
@@ -902,18 +926,41 @@ html {
 
 .nfw-write-input__actions { display: flex; gap: 0.3rem; }
 
-/* 공통 버튼 */
+/* 공통 버튼 — 타원·밝은 회색·진한 굵은 글자 */
 .nfw-btn {
-  padding: 0.32rem 0.8rem; border-radius: 5px; border: 1px solid #dce5ef;
-  background: #f8fafc; color: #0f2744; font-weight: 600;
-  cursor: pointer; font-family: inherit; transition: background 0.12s;
+  padding: 0.45em 0.85em;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: var(--nfw-btn-fill);
+  color: var(--nfw-btn-text);
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s, border-color 0.12s;
 }
-.nfw-btn:hover:not(:disabled) { background: #e2e8f0; }
+.nfw-btn:hover:not(:disabled) {
+  background: var(--nfw-btn-fill-hover);
+  border-color: #94a3b8;
+}
 .nfw-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.nfw-btn--primary { background: #c05621; border-color: #c05621; color: #fff; }
-.nfw-btn--primary:hover:not(:disabled) { background: #a04918; }
-.nfw-btn--ghost  { background: transparent; border-color: #c05621; color: #c05621; }
-.nfw-btn--ghost:hover:not(:disabled) { background: #fff5f0; }
+.nfw-btn--primary {
+  background: var(--nfw-btn-fill);
+  border-color: #cbd5e1;
+  color: var(--nfw-btn-text);
+}
+.nfw-btn--primary:hover:not(:disabled) {
+  background: var(--nfw-btn-fill-hover);
+  border-color: #1a5fa8;
+}
+.nfw-btn--ghost {
+  background: var(--nfw-btn-fill);
+  border-color: #cbd5e1;
+  color: var(--nfw-btn-text);
+}
+.nfw-btn--ghost:hover:not(:disabled) {
+  background: var(--nfw-btn-fill-hover);
+  border-color: #94a3b8;
+}
 .nfw-btn--sm  { padding: 0.2rem 0.55rem; }
 .nfw-btn--lg  { padding: 0.5rem 1.4rem; }
 
@@ -933,11 +980,22 @@ html {
 }
 .nfw-draft__tabs { display: flex; gap: 0.2rem; }
 .nfw-draft__tab {
-  padding: 0.28rem 0.7rem; border-radius: 5px; border: 1px solid transparent;
-  font-size: 0.78rem; font-weight: 700; cursor: pointer; color: #64748b;
-  background: transparent; font-family: inherit; transition: background 0.12s;
+  padding: 0.45em 0.85em;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  color: var(--nfw-btn-text);
+  background: var(--nfw-btn-fill);
+  font-family: inherit;
+  transition: background 0.12s, border-color 0.12s;
 }
-.nfw-draft__tab.is-active { background: #0f2744; color: #fff; border-color: #0f2744; }
+.nfw-draft__tab.is-active {
+  background: var(--nfw-btn-fill-hover);
+  color: var(--nfw-btn-text);
+  border-color: #1a5fa8;
+}
 .nfw-draft__head-actions .nfw-btn {
   padding: var(--nfw-bar-btn-pad-y) calc(0.55rem * 0.6);
   border-radius: var(--nfw-bar-radius);
@@ -1020,15 +1078,16 @@ html {
 }
 .nfw-field--excerpt .nfw-field__label { padding-top: 0.22rem; }
 
-/* 카테고리·제목·요약 — 라벨(설명문) 폰트 50% */
+/* 카테고리·제목·요약 — 라벨·입력 (spec 7·3) */
 .nfw-fields-row__pair .nfw-field--cat .nfw-field__label,
 .nfw-fields-row__pair .nfw-field--title .nfw-field__label,
 .nfw-field--excerpt .nfw-field__label {
-  font-size: calc(var(--nfw-uni-fs) * var(--nfw-meta-fs-scale) * 0.5) !important;
+  font-size: var(--nfw-fs-ui);
 }
-.nfw-fields-row__pair .nfw-field__input,
+.nfw-fields-row__pair .nfw-field--cat .nfw-field__input,
+.nfw-fields-row__pair .nfw-field--title .nfw-field__input,
 .nfw-field--excerpt .nfw-field__input {
-  font-size: calc(var(--nfw-fs-body) * 1.3 * var(--nfw-meta-fs-scale));
+  font-size: var(--nfw-fs-body);
 }
 .nfw-fields-row__pair .nfw-field__input::placeholder,
 .nfw-field--excerpt .nfw-field__input::placeholder {
@@ -1179,13 +1238,14 @@ html {
 }
 
 .nfw-ai-side-btn--images {
-  border-color: #86efac;
-  color: #166534;
-  background: #f0fdf4;
+  border-color: #cbd5e1;
+  color: var(--nfw-btn-text);
+  background: var(--nfw-btn-fill);
 }
 .nfw-ai-side-btn--images:hover {
-  background: #dcfce7;
-  border-color: #4ade80;
+  background: var(--nfw-btn-fill-hover);
+  border-color: #94a3b8;
+  color: var(--nfw-btn-text);
 }
 
 .nfw-field { display: flex; flex-direction: column; gap: 0.15rem; }
@@ -1409,7 +1469,7 @@ html {
   font-size: calc(0.7rem * var(--nfw-tab-fs-scale));
 }
 
-/* 글쓰기 창 — 버튼·라벨 폰트 통일 (새글 쓰기 × 120%) */
+/* 글쓰기 창 — 버튼·라벨 폰트 통일 (spec 토큰) */
 .nfw-app :is(
   .nfw-topbar__home-btn,
   .nfw-topbar .nf-auth-chip,
@@ -1418,7 +1478,6 @@ html {
   .nfw-ai-sidebar__label,
   .nfw-ai-side-btn,
   .nfw-btn,
-  .nfw-draft__phase-label,
   .nfw-draft__tab,
   .nfw-prompt-grid__label,
   .nfw-field__label,
@@ -1433,34 +1492,67 @@ html {
   font-size: var(--nfw-uni-fs) !important;
 }
 
-/* 1차 소재 바 — 크기·한 줄 고정 */
+/* 1차 소재 바 — 100px·0.7em 패딩 */
 .nfw-phase1-bar .nfw-phase1-btn {
   font-size: var(--nfw-phase1-btn-fs) !important;
-  line-height: 1 !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
   white-space: nowrap !important;
   width: var(--nfw-phase1-btn-w) !important;
-  height: var(--nfw-phase1-btn-h) !important;
   min-width: var(--nfw-phase1-btn-w) !important;
-  min-height: var(--nfw-phase1-btn-h) !important;
   max-width: var(--nfw-phase1-btn-w) !important;
-  padding: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: var(--nfw-phase1-btn-pad-y) 0.45em !important;
+  border-radius: 999px !important;
+  background: var(--nfw-btn-fill) !important;
+  color: var(--nfw-btn-text) !important;
   box-sizing: border-box;
 }
 
-/* 좌측 AI 명령 — 한 줄·세로 높이 통일 */
+/* 좌측 AI 명령 — 80px·0.5em·간격 0.3rem */
 .nfw-ai-sidebar .nfw-ai-sidebar__open-btn,
-.nfw-ai-sidebar .nfw-ai-sidebar__label,
 .nfw-ai-sidebar .nfw-ai-side-btn {
+  font-size: var(--nfw-ai-side-fs) !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: var(--nfw-ai-side-btn-pad-y) 0.35em !important;
+  border-radius: 999px !important;
+  background: var(--nfw-btn-fill) !important;
+  color: var(--nfw-btn-text) !important;
+  border: 1px solid #cbd5e1 !important;
+  box-sizing: border-box;
+}
+.nfw-ai-sidebar .nfw-ai-sidebar__label {
   font-size: var(--nfw-ai-side-fs) !important;
   line-height: 1 !important;
   white-space: nowrap !important;
-  height: var(--nfw-ai-side-btn-h) !important;
-  min-height: var(--nfw-ai-side-btn-h) !important;
+  height: auto !important;
+  min-height: 0 !important;
   box-sizing: border-box;
+}
+.nfw-ai-sidebar .nfw-ai-side-btn:hover,
+.nfw-ai-sidebar .nfw-ai-sidebar__open-btn:hover {
+  background: var(--nfw-btn-fill-hover) !important;
+  border-color: #94a3b8 !important;
+  color: var(--nfw-btn-text) !important;
+}
+.nfw-ai-sidebar .nfw-ai-side-btn.is-active,
+.nfw-ai-sidebar .nfw-ai-side-btn--images,
+.nfw-ai-sidebar .nfw-ai-side-btn--images:hover {
+  background: var(--nfw-btn-fill-hover) !important;
+  color: var(--nfw-btn-text) !important;
+}
+.nfw-ai-sidebar .nfw-ai-side-btn.is-active {
+  border-color: #1a5fa8 !important;
 }
 .nfw-insert-pos__label,
 .nfw-insert-pos__opt {
-  font-size: calc(var(--nfw-uni-fs) * 0.8) !important;
+  font-size: var(--nfw-fs-ui) !important;
   line-height: 1.2;
 }
 
@@ -2125,22 +2217,27 @@ html {
   background: #fff !important;
 }
 .nfw-draft-col .nfw-draft__phase-label {
-  font-size: var(--nfw-fs-body-sm) !important;
+  font-size: var(--nfw-fs-title) !important;
   color: #000;
 }
 .nfw-draft-col .nfw-fields-row__pair .nfw-field--cat .nfw-field__label,
 .nfw-draft-col .nfw-fields-row__pair .nfw-field--title .nfw-field__label,
 .nfw-draft-col .nfw-field--excerpt .nfw-field__label {
-  font-size: calc(var(--nfw-fs-body-sm) * 0.5) !important;
+  font-size: var(--nfw-fs-ui) !important;
   color: #000;
 }
 .nfw-draft-col .nfw-field--body .nfw-field__label,
 .nfw-draft-col .nfw-field__label {
-  font-size: var(--nfw-fs-body-sm) !important;
+  font-size: var(--nfw-fs-ui) !important;
   color: #000;
 }
-.nfw-draft-col .nfw-fields-row__pair .nfw-field__input,
-.nfw-draft-col .nfw-field--excerpt .nfw-field__input,
+.nfw-draft-col .nfw-fields-row__pair .nfw-field--cat .nfw-field__input,
+.nfw-draft-col .nfw-fields-row__pair .nfw-field--title .nfw-field__input,
+.nfw-draft-col .nfw-field--excerpt .nfw-field__input {
+  font-size: var(--nfw-fs-body) !important;
+  color: #000 !important;
+  caret-color: #000;
+}
 .nfw-draft-col .nfw-field__textarea,
 .nfw-draft-col .nfw-body-rich {
   font-size: var(--nfw-fs-body) !important;
@@ -2194,3 +2291,157 @@ html {
 .nfw-ai-turn__prompt { color: #000; }
 .nfw-ai-turn__cmd { color: #000; opacity: 0.72; }
 .nfw-chat__empty { color: #000; opacity: 0.55; }
+
+/* ══════════════════════════════════════════════
+   글쓰기창 전용 타이포 (확정 spec — /write only)
+   본문 0.8 · 제목 0.7 · 버튼·라벨 0.6 · 그리드설명 0.4 · AI echo 0.4
+══════════════════════════════════════════════ */
+
+/* 버튼 0.6rem — 타원·밝은회색·진한굵은 글자 */
+.nfw-app :is(
+  .nfw-btn,
+  .nfw-ai-side-btn,
+  .nfw-ai-sidebar__open-btn,
+  .nfw-phase1-btn,
+  .nfw-topbar__home-btn,
+  .nfw-topbar .nf-auth-chip,
+  .nfw-confirm__btn,
+  .nfw-draft__tab,
+  .nfw-insert-bar__btn,
+  .nfw-insert-pos__opt,
+  .nfw-versions__item,
+  .nfw-prompt-grid__actions .nfw-btn,
+  .nfw-chat__cmds .nfw-btn,
+  .nfw-insert-rail__toggle,
+  .nfw-media-form__btn
+) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  line-height: 1.15 !important;
+  font-size: var(--nfw-fs-btn) !important;
+  font-weight: 800 !important;
+  color: var(--nfw-btn-text) !important;
+  background: var(--nfw-btn-fill) !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 999px !important;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nfw-app :is(
+  .nfw-btn:hover:not(:disabled),
+  .nfw-ai-side-btn:hover,
+  .nfw-ai-sidebar__open-btn:hover,
+  .nfw-phase1-btn:hover,
+  .nfw-insert-bar__btn:hover,
+  .nfw-insert-rail__toggle:hover,
+  .nfw-media-form__btn:hover
+) {
+  background: var(--nfw-btn-fill-hover) !important;
+  border-color: #94a3b8 !important;
+  color: var(--nfw-btn-text) !important;
+}
+.nfw-app :is(
+  .nfw-ai-side-btn.is-active,
+  .nfw-phase1-btn.is-active,
+  .nfw-draft__tab.is-active
+) {
+  background: var(--nfw-btn-fill-hover) !important;
+  border-color: #1a5fa8 !important;
+  color: var(--nfw-btn-text) !important;
+}
+
+/* 제목 (3차·글쓰기 완성 등) 0.7rem */
+.nfw-app :is(
+  .nfw-draft__phase-label,
+  .nfw-cmdmgr__title
+) {
+  font-size: var(--nfw-fs-title) !important;
+}
+
+/* 본문(좌·우) · AI 답변 · 입력글 0.8rem */
+.nfw-app :is(
+  .nfw-body-rich,
+  .nfw-preview__body,
+  .nfw-preview__title,
+  .nfw-ai-turn__reply,
+  .nfw-fields-row__pair .nfw-field--cat .nfw-field__input,
+  .nfw-fields-row__pair .nfw-field--title .nfw-field__input,
+  .nfw-field--excerpt .nfw-field__input,
+  .nfw-field__textarea,
+  .nfw-load-field__input,
+  .nfw-tmpl-input,
+  .nfw-media-form__input,
+  .nfw-cmdmgr__textarea
+) {
+  font-size: var(--nfw-fs-body) !important;
+}
+
+/* AI echo 0.4rem */
+.nfw-app :is(
+  .nfw-ai-turn__prompt,
+  .nfw-ai-turn__cmd
+) {
+  font-size: var(--nfw-fs-ai-echo) !important;
+}
+
+/* 그리드 입력 설명문 0.4rem */
+.nfw-app :is(
+  .nfw-img-grid__hint,
+  .nfw-prompt-grid__label,
+  .nfw-panel-empty,
+  .nfw-prompt-grid textarea,
+  .nfw-prompt-grid__guide
+) {
+  font-size: var(--nfw-fs-grid-guide) !important;
+}
+
+/* 라벨·기타 UI 0.6rem */
+.nfw-app :is(
+  .nfw-field__label,
+  .nfw-topbar__phase,
+  .nfw-topbar__doc-title,
+  .nfw-topbar__status,
+  .nfw-topbar__badge,
+  .nfw-chat__empty,
+  .nfw-preview__excerpt,
+  .nfw-publish-meta__row,
+  .nfw-load-field__label,
+  .nfw-media-form__label,
+  .nfw-sidebar__search-input,
+  .nfw-insert-rail__label,
+  .nfw-media-form__label-box,
+  .nfw-insert-bar__label,
+  .nfw-img-strip__label,
+  .nfw-tmpl-name,
+  .nfw-tmpl-actions__status,
+  .nfw-picker__empty,
+  .nfw-picker__status,
+  .nfw-msg__role,
+  .nfw-rev-legend,
+  .nfw-cmdmgr__label,
+  .nfw-cmdmgr__hint,
+  .nfw-cmdmgr__saved,
+  .nfw-cmdmgr__lead,
+  .nfw-ai-sidebar__label,
+  .nfw-versions__label,
+  .nfw-insert-pos__label
+) {
+  font-size: var(--nfw-fs-ui) !important;
+}
+
+.nfw-draft-col .nfw-fields-row__pair .nfw-field--cat .nfw-field__label,
+.nfw-draft-col .nfw-fields-row__pair .nfw-field--title .nfw-field__label,
+.nfw-draft-col .nfw-field--excerpt .nfw-field__label {
+  font-size: var(--nfw-fs-ui) !important;
+}
+
+.nfw-draft-col .nfw-fields-row__pair .nfw-field--cat .nfw-field__input,
+.nfw-draft-col .nfw-fields-row__pair .nfw-field--title .nfw-field__input,
+.nfw-draft-col .nfw-field--excerpt .nfw-field__input,
+.nfw-draft-col .nfw-body-rich,
+.nfw-draft-col .nfw-field--body .nfw-body-rich {
+  font-size: var(--nfw-fs-body) !important;
+}
