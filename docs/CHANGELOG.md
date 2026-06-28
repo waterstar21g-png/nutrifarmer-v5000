@@ -18,7 +18,8 @@
 | **V5.0.0.8** | `67dcac8` | `dpl_6tETrRj4g88fTPnCEjhyJEgm8KGU` | 배너·폰트 rem · 대표이미지 분리 · 배너 스크롤 |
 | **V5.0.0.9** | (combined) | `dpl_3aYsk2hX8shcPYgsXFWanUrKqcTF` | 최신 글·프로그램 섹션을 가족 앨범 기준 크기로 정렬 |
 | **V5.0.0.10** | `10b233c` | `dpl_1Me47rx3iwB4GnScL5kjhgFryhCB` | 푸터 링크를 최신 단일글 URL로 연결해 404 방지 |
-| **V5.0.0.11** | (commit) | `dpl_9ydsamis55tfn3ExkrFJ34vLkwWU` | AI글쓰기 이미지·버튼·상단 사용자 표시 스타일 조정 |
+| **V5.0.0.11** | `627f7f8` | `dpl_9ydsamis55tfn3ExkrFJ34vLkwWU` | AI글쓰기 이미지·버튼·상단 사용자 표시 스타일 조정 |
+| **V5.0.0.12** | `d1311c9` | `dpl_DLxipKTh6FmDAh4CepiRKizGFbrH` | 단일글·카테고리 배너 정렬 · 댓글 폼 축소 · 글 전환 시 입력 CLEAR |
 
 > **버전 파일:** `docs/V5000-VERSION.json` · **규칙:** V5 = 플랫폼 · MINOR = 공개 UI 배치 · PATCH = 글쓰기·도구 배치
 

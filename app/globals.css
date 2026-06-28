@@ -32,7 +32,7 @@
   --nf-top-bar-h:  2.1rem;
   --nf-nav-bar-h:  2.94rem;
   --nf-header-h:   calc(var(--nf-top-bar-h) + var(--nf-nav-bar-h));
-  --nf-banner-h:   calc(var(--nf-header-h) * 1.2);
+  --nf-banner-h:   var(--nf-header-h);
   /* 전체화면 섹션 공통 수평 패딩 */
   --nf-px:         clamp(1.25rem, 3.5vw, 3rem);
   /* 공통 — 바탕 투명 · 글씨 검정 (글쓰기·단일글·헤더 카테고리) */
@@ -2976,4 +2976,90 @@ a.nf-preview-card-link:hover,
 .nf-comments__submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ══════════════════════════════════════════════
+   사용자 요청 2026-06-28 — 단일글/카테고리 배너 + 댓글 폼 보정
+══════════════════════════════════════════════ */
+
+/* 단일글·카테고리 선택 배너: 헤더 높이와 동일, 대표이미지 영역 기준 중앙 정렬 */
+.nf-page-banner,
+.nf-post-banner.nf-single-banner-band {
+  height: var(--nf-header-h) !important;
+  min-height: var(--nf-header-h) !important;
+  padding: 0 12.5% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) min(280px, 25vw);
+  grid-template-rows: 1fr auto;
+  column-gap: clamp(1rem, 2.5vw, 2rem);
+  align-items: center;
+  justify-content: initial;
+  box-sizing: border-box;
+}
+.nf-post-banner.nf-single-banner-band .nf-post-banner__content {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  width: 100%;
+  height: 100%;
+  justify-self: center;
+  align-self: center;
+  padding: 0 !important;
+}
+.nf-page-banner__title,
+.nf-post-banner.nf-single-banner-band .nf-post-banner__title {
+  font-size: 0.9rem !important;
+  line-height: 1.25;
+}
+.nf-page-banner__count,
+.nf-post-banner.nf-single-banner-band .nf-post-banner__meta {
+  font-size: 0.6rem !important;
+}
+.nf-post-banner.nf-single-banner-band .nf-post-banner__cat {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #fff !important;
+  font-size: 0.6rem !important;
+  font-weight: 700;
+}
+
+/* 대표이미지 아래 본문 시작 전 5줄 여백 */
+.nf-single__thumb,
+.nf-cat-single-hero {
+  margin-bottom: calc(0.7rem * 1.8 * 5) !important;
+}
+
+/* 댓글 폼 축소/간격 정리 */
+.nf-comments__box {
+  padding: 0.85rem 1rem 1rem;
+}
+.nf-comments__head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 0.45rem;
+}
+.nf-comments__title {
+  margin: 0 !important;
+}
+.nf-comments__form {
+  gap: 0.42rem !important;
+}
+.nf-comments__field {
+  gap: 0.18rem !important;
+}
+.nf-comments__textarea {
+  min-height: 4.5rem !important;
+  padding: 0.34rem 0.5rem !important;
+}
+.nf-comments__field input {
+  min-height: 1.55rem;
+  padding: 0.25rem 0.45rem !important;
+}
+.nf-comments__submit {
+  align-self: auto !important;
+  flex-shrink: 0;
+  padding: 0.42rem 1rem !important;
 }

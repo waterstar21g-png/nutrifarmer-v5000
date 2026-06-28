@@ -16,22 +16,6 @@ interface Props {
   postId: number;
 }
 
-function loadSavedAuthor(): { name: string; email: string; url: string } {
-  if (typeof window === 'undefined') return { name: '', email: '', url: '' };
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { name: '', email: '', url: '' };
-    const data = JSON.parse(raw) as { name?: string; email?: string; url?: string };
-    return {
-      name: data.name ?? '',
-      email: data.email ?? '',
-      url: data.url ?? '',
-    };
-  } catch {
-    return { name: '', email: '', url: '' };
-  }
-}
-
 function formatDate(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString('ko-KR', {
@@ -51,9 +35,7 @@ export function PostComments({ postId }: Props) {
   const [error, setError] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [url, setUrl] = useState('');
   const [body, setBody] = useState('');
-  const [remember, setRemember] = useState(false);
 
   const loadComments = useCallback(async () => {
     setLoading(true);
@@ -69,15 +51,12 @@ export function PostComments({ postId }: Props) {
   }, [postId]);
 
   useEffect(() => {
+    setBody('');
+    setName('');
+    setEmail('');
+    setError('');
     void loadComments();
-    const saved = loadSavedAuthor();
-    if (saved.name || saved.email) {
-      setName(saved.name);
-      setEmail(saved.email);
-      setUrl(saved.url);
-      setRemember(true);
-    }
-  }, [loadComments]);
+  }, [postId, loadComments]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -91,7 +70,7 @@ export function PostComments({ postId }: Props) {
           postId,
           authorName: name,
           authorEmail: email,
-          authorUrl: url,
+          authorUrl: '',
           body,
         }),
       });
@@ -100,11 +79,7 @@ export function PostComments({ postId }: Props) {
         setError(data.message ?? '댓글 등록에 실패했습니다.');
         return;
       }
-      if (remember) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, email, url }));
-      } else {
-        localStorage.removeItem(STORAGE_KEY);
-      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, email }));
       setComments(prev => [data.comment!, ...prev]);
       setBody('');
     } catch {
@@ -139,21 +114,24 @@ export function PostComments({ postId }: Props) {
       )}
 
       <div className="nf-comments__box">
-        <h2 className="nf-comments__title">댓글 남기기</h2>
+        <div className="nf-comments__head">
+          <h2 className="nf-comments__title">댓글 남기기</h2>
+          <button type="submit" form="nf-comment-form" className="nf-comments__submit" disabled={submitting}>
+            {submitting ? '등록 중…' : '댓글 등록'}
+          </button>
+        </div>
 
-        <form className="nf-comments__form" onSubmit={onSubmit}>
+        <form id="nf-comment-form" className="nf-comments__form" onSubmit={onSubmit}>
           <label className="nf-comments__field">
             <span className="nf-comments__label">댓글 *</span>
             <textarea
               required
-              rows={8}
+              rows={4}
               value={body}
               onChange={e => setBody(e.target.value)}
               className="nf-comments__textarea"
             />
           </label>
-
-          <p className="nf-comments__note">* 표시는 필수 입력 항목입니다.</p>
 
           <label className="nf-comments__field">
             <span className="nf-comments__label">이름 *</span>
@@ -175,30 +153,8 @@ export function PostComments({ postId }: Props) {
               autoComplete="email"
             />
           </label>
-          <label className="nf-comments__field">
-            <span className="nf-comments__label">웹사이트</span>
-            <input
-              type="url"
-              value={url}
-              onChange={e => setUrl(e.target.value)}
-              autoComplete="url"
-            />
-          </label>
-
-          <label className="nf-comments__remember">
-            <input
-              type="checkbox"
-              checked={remember}
-              onChange={e => setRemember(e.target.checked)}
-            />
-            <span>Save my name, email, and website in this browser for the next time I comment.</span>
-          </label>
 
           {error && <p className="nf-comments__error" role="alert">{error}</p>}
-
-          <button type="submit" className="nf-comments__submit" disabled={submitting}>
-            {submitting ? '등록 중…' : '댓글 등록'}
-          </button>
         </form>
       </div>
     </section>
