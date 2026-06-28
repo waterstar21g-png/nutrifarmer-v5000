@@ -13,6 +13,8 @@
 |---|---|---|---|
 | **V5.0.0.0** | `0dff010` | `dpl_6hZXiMyxGp8tpac819PEoJ3vPiu5` | UI spec 1~10 반영 **이전** baseline |
 | **V5.0.0.1** | `bc070b5` | `dpl_GpHbEsqCA9YrnQEnihessaq2HWty` | `/write` 전체 글자 +60% (×1.6) |
+| **V5.0.0.6** | `449b6d5` | `dpl_A5fNQQzitzo3QUGBTFGarj1qMzgz` | 메뉴→최신 단일글 · 댓글 · 카테고리 4×2 제거 |
+| **V5.0.0.7** | (commit) | `dpl_oyQcgTk8QFqokaYQkbpfson4apSX` | 단일글 old WP 이미지 배너 복구 |
 
 > **버전 파일:** `docs/V5000-VERSION.json` · **규칙:** V5 = 플랫폼 · MINOR = 공개 UI 배치 · PATCH = 글쓰기·도구 배치
 

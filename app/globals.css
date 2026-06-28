@@ -1124,6 +1124,9 @@ body {
   min-height: clamp(280px, 38vh, 450px);
   height: auto;
 }
+.nf-post-banner--tall .nf-post-banner__content {
+  min-height: clamp(280px, 38vh, 450px);
+}
 .nf-post-banner__bg {
   position: absolute;
   inset: 0;

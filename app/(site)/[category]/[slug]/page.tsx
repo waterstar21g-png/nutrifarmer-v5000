@@ -105,6 +105,12 @@ export default async function PostPage({ params, searchParams }: Props) {
   const displayImgUrl = firstImageFromBody(rawBodyHtml);
   const bodyHtml = displayImgUrl ? removeFirstImageBlock(rawBodyHtml) : rawBodyHtml;
   const title = post.title;
+  const publishedIso = (post.publishedAt ?? post.updatedAt).toISOString();
+  const dateStr = new Date(publishedIso).toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   const idx = catPosts.findIndex(p => p.id === post.id);
   const older = idx >= 0 && idx < catPosts.length - 1 ? catPosts[idx + 1] : null;
@@ -119,30 +125,30 @@ export default async function PostPage({ params, searchParams }: Props) {
   return (
     <div className="nf-single-page nf-single-compact">
       <SinglePostFromWrite />
+
+      <div className="nf-post-banner nf-post-banner--tall nf-single-banner-band" id="nf-single-banner-band">
+        {displayImgUrl && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img src={displayImgUrl} alt={title} className="nf-post-banner__bg" />
+        )}
+        <div className="nf-post-banner__overlay" aria-hidden="true" />
+        <div className="nf-post-banner__content">
+          <h1 className="nf-post-banner__title">{title}</h1>
+          <div className="nf-post-banner__meta">
+            <span aria-hidden="true">|</span>
+            <time dateTime={publishedIso}>{dateStr}</time>
+            <span aria-hidden="true">|</span>
+            {cat && (
+              <Link href={`/${cat.slug}`} className="nf-post-banner__cat">
+                {cat.name}
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="nf-single-layout nf-single-main-wide">
         <article className="nf-single-main">
-          <div className="nf-page-banner nf-page-banner--single" id="nf-single-banner-band">
-            <div className="nf-page-banner__content">
-              <h1 className="nf-page-banner__title">{title}</h1>
-            </div>
-          </div>
-
-          {displayImgUrl ? (
-            <div className="nf-single-hero" aria-label={`${title} 대표 이미지`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={displayImgUrl}
-                alt={title}
-                className="nf-single-hero__img"
-              />
-            </div>
-          ) : (
-            <div className="nf-single-hero nf-single-hero--empty">
-              <span aria-hidden="true">📷</span>
-              <p>대표 이미지 없음</p>
-            </div>
-          )}
-
           {bodyHtml.replace(/<[^>]+>/g, '').trim().length > 0 && (
             <div
               className="wp-content nf-single-body"
