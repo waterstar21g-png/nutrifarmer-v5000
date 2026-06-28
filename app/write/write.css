@@ -2988,3 +2988,13 @@ html {
 .nfw-app .nfw-insert-rail__send:hover {
   background: #eef9ff !important;
 }
+
+/* V5.0.0.17 — 우측 상단 4개 버튼 글자·색상 보정 */
+.nfw-app .nfw-write-action-btn,
+.nfw-app .nfw-write-action-btn.nfw-btn--primary,
+.nfw-app .nfw-write-action-btn:hover:not(:disabled),
+.nfw-app .nfw-write-action-btn.nfw-btn--primary:hover:not(:disabled) {
+  background: #e6fbff !important;
+  color: #000 !important;
+  font-size: 0.9rem !important;
+}

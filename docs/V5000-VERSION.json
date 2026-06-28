@@ -5,14 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.16",
-  "label": "V5.0.0.16",
-  "commit": "5db7918",
-  "commitFull": "5db7918868c7e43e8caf0f902d5fb825a852043c",
-  "deploymentId": "dpl_94d9rKiwrBtgXYGCSb12FaJt12fu",
+  "version": "5.0.0.17",
+  "label": "V5.0.0.17",
+  "commit": "",
+  "commitFull": "",
+  "deploymentId": "dpl_8GrRcGtvz7wir2QerFci9N3mJLjR",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Move prompt submit to insert rail and refine write button borders",
-  "updatedAt": "2026-06-28T19:45:00+09:00"
+  "summary": "Increase write action button text size and apply pale sea background",
+  "updatedAt": "2026-06-28T19:55:00+09:00"
 }
