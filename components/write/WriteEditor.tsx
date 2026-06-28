@@ -544,6 +544,9 @@ function WriteEditorInner() {
     <div className="nfw-app">
       <header className="nfw-topbar">
         <div className="nfw-topbar__left">
+          <button type="button" className="nfw-topbar__home-btn" onClick={goToMainHome}>
+            HOME
+          </button>
           <span className="nfw-topbar__badge">✨ AI 글쓰기</span>
           <span className="nfw-topbar__phase">{PHASE_LABEL[phase]}</span>
           {draft.title && <span className="nfw-topbar__doc-title">{draft.title}</span>}
@@ -561,7 +564,6 @@ function WriteEditorInner() {
             onInsertImage={insertImage}
             onInsertVideo={insertVideo}
             onInsertFile={insertFile}
-            onHome={goToMainHome}
             onNewDraft={newDraft}
             onAiApply={handleAiApply}
             onRecommendImages={recommendImages}

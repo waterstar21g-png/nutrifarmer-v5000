@@ -5,14 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.17",
-  "label": "V5.0.0.17",
-  "commit": "11e4f55",
-  "commitFull": "11e4f55d9edecc46e00a41107768c52f935efa3d",
-  "deploymentId": "dpl_8GrRcGtvz7wir2QerFci9N3mJLjR",
+  "version": "5.0.0.18",
+  "label": "V5.0.0.18",
+  "commit": "",
+  "commitFull": "",
+  "deploymentId": "dpl_8WvcoJ1GdJ2HJ5Fie2uAfGCuuKoL",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Increase write action button text size and apply pale sea background",
-  "updatedAt": "2026-06-28T19:55:00+09:00"
+  "summary": "Restore topbar HOME and move new draft to the left lead button slot",
+  "updatedAt": "2026-06-28T20:05:00+09:00"
 }

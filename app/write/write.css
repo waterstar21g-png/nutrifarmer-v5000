@@ -2998,3 +2998,13 @@ html {
   color: #000 !important;
   font-size: 0.9rem !important;
 }
+
+/* V5.0.0.18 — 기존 HOME 복원, 새글쓰기 버튼을 좌측 lead 칸으로 이동 */
+.nfw-app .nfw-topbar__home-btn {
+  display: inline-flex !important;
+}
+.nfw-app .nfw-phase1-bar__lead .nfw-main-mode-btn,
+.nfw-app .nfw-phase1-bar__lead .nfw-main-mode-btn.is-active,
+.nfw-app .nfw-phase1-bar__lead .nfw-main-mode-btn:hover {
+  border: 1px solid var(--nfw-v5016-sky-border) !important;
+}

@@ -32,7 +32,6 @@ interface Props {
   onInsertImage: (payload: { url: string; alt: string; descFontSize: number }) => void;
   onInsertVideo: (payload: { url: string; title: string; descFontSize: number }) => void;
   onInsertFile: (payload: { url: string; name: string; descFontSize: number }) => void;
-  onHome: () => void;
   onNewDraft: () => boolean | Promise<boolean>;
   onAiApply: (text: string, cmdId: AiCmdId) => void;
   onRecommendImages: () => Promise<string>;
@@ -63,7 +62,7 @@ function buildSideButtons(): SideBtn[] {
 
 export function ChatPanel({
   draft, onInsertImage, onInsertVideo, onInsertFile,
-  onHome, onNewDraft, onAiApply, onRecommendImages, onPromptSubmitReady, imageRecommendLoading,
+  onNewDraft, onAiApply, onRecommendImages, onPromptSubmitReady, imageRecommendLoading,
 }: Props) {
   const [mode, setMode] = useState<MaterialMode>('write');
   const [turns, setTurns] = useState<AiTurn[]>([]);
@@ -215,14 +214,11 @@ export function ChatPanel({
     <div className="nfw-chat">
       <div className="nfw-phase1-bar">
         <div className="nfw-phase1-bar__lead">
-          <button type="button" className="nfw-phase1-btn nfw-phase1-btn--home" onClick={onHome}>
-            HOME
+          <button type="button" className={`nfw-phase1-btn nfw-main-mode-btn nfw-phase1-btn--new${mode === 'write' ? ' is-active' : ''}`} onClick={() => void startNewWrite()}>
+            새글 쓰기
           </button>
         </div>
         <div className="nfw-phase1-bar__rest">
-        <button type="button" className={`nfw-phase1-btn nfw-main-mode-btn nfw-phase1-btn--new${mode === 'write' ? ' is-active' : ''}`} onClick={() => void startNewWrite()}>
-          새글 쓰기
-        </button>
         <button type="button" className={`nfw-phase1-btn nfw-main-mode-btn${mode === 'photo' ? ' is-active' : ''}`} onClick={() => onMaterial('photo')}>
           사진/이미지
         </button>
