@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { SHOWCASE_CATS } from '@/lib/site-data';
 import type { V5000Category, V5000PostDto } from '@/lib/v5000-content/types';
 import { AuthStatus } from '@/components/auth/AuthStatus';
+import { postHref } from '@/lib/post-href';
 import { bindWritePopupToOpener, goToMainHome, goToMainPostView } from '@/lib/write-popup';
 import { openAuthFromWritePopup } from '@/lib/auth-navigation';
 import { DraftPanel } from './DraftPanel';
@@ -476,7 +477,60 @@ function WriteEditorInner() {
     let categorySlug = draft.categorySlug || remembered?.categorySlug || '';
     let slug = draft.postSlug.trim() || remembered?.slug || '';
     let postId = draft.postId ?? remembered?.id ?? null;
-    let directLink = remembered?.link;
+
+    const openPost = (): boolean => {
+      if (postId && categorySlug) {
+        const path = postHref(categorySlug, slug || 'post', postId);
+        goToMainPostView(path);
+        setStatusMsg(`👁 게시글 → ${path}`);
+        return true;
+      }
+      if (slug && categorySlug) {
+        const path = postHref(categorySlug, slug);
+        goToMainPostView(path);
+        setStatusMsg(`👁 게시글 → ${path}`);
+        return true;
+      }
+      const directLink = remembered?.link;
+      if (directLink) {
+        let fallback = directLink;
+        try {
+          const u = new URL(directLink, window.location.origin);
+          if (postId && !u.searchParams.has('pid')) {
+            u.searchParams.set('pid', String(postId));
+          }
+          fallback = `${u.pathname}${u.search}`;
+        } catch {
+          /* keep directLink */
+        }
+        goToMainPostView(fallback);
+        setStatusMsg(`👁 게시글 → ${fallback}`);
+        return true;
+      }
+      return false;
+    };
+
+    if (postId && categorySlug && openPost()) {
+      try {
+        const r = await fetch(`${POSTS_API}/${postId}`, { credentials: 'same-origin' });
+        if (r.ok) {
+          const data = await r.json();
+          if (data.ok && data.post?.status === 'publish') {
+            const target = postTargetFromDto(data.post as V5000PostDto);
+            lastPublishedRef.current = target;
+            setDraft(d => ({
+              ...d,
+              postSlug: data.post.slug,
+              postId: data.post.id,
+              categorySlug: data.post.categorySlug || d.categorySlug,
+            }));
+          }
+        }
+      } catch {
+        /* 이미 열림 — 백그라운드 동기화 실패 무시 */
+      }
+      return { ok: true };
+    }
 
     try {
       const r = await fetch(
@@ -484,11 +538,14 @@ function WriteEditorInner() {
         { credentials: 'same-origin' },
       );
       const data = await r.json();
+
       if (r.status === 401) {
-        setStatusMsg('⚠️ 로그인이 만료되었습니다.');
+        if (openPost()) return { ok: true };
+        setStatusMsg('⚠️ 로그인이 만료되었습니다. 로그인 후 다시 시도해 주세요.');
         openAuthFromWritePopup(`/login?redirect_to=${encodeURIComponent('/write')}`);
-        return { ok: false, silent: true };
+        return { ok: false };
       }
+
       if (postId && r.ok && data.ok && data.post) {
         if (data.post.status !== 'publish') {
           setStatusMsg('⚠️ 게시된 글이 없습니다. 먼저 게시하기를 실행해 주세요.');
@@ -499,7 +556,6 @@ function WriteEditorInner() {
         categorySlug = data.post.categorySlug || categorySlug;
         slug = data.post.slug;
         postId = data.post.id;
-        directLink = data.post.link;
       } else if (!postId && r.ok && data.ok && Array.isArray(data.posts) && data.posts.length > 0) {
         const latest = data.posts[0] as V5000PostDto;
         const target = postTargetFromDto(latest);
@@ -507,8 +563,8 @@ function WriteEditorInner() {
         categorySlug = latest.categorySlug || categorySlug;
         slug = latest.slug;
         postId = latest.id;
-        directLink = latest.link;
       }
+
       if (slug && postId) {
         setDraft(d => ({
           ...d,
@@ -518,26 +574,13 @@ function WriteEditorInner() {
         }));
       }
     } catch {
-      /* draft에 저장된 slug·postId 로 진행 */
+      /* API 없이 로컬 postId·slug로 진행 */
     }
 
-    if ((!slug || !categorySlug) && directLink) {
-      goToMainPostView(directLink);
-      setStatusMsg(`👁 방금 게시글 → ${directLink}`);
-      return { ok: true };
-    }
+    if (openPost()) return { ok: true };
 
-    if (!slug || !categorySlug) {
-      setStatusMsg('⚠️ 게시 후 게시글보기를 이용할 수 있습니다.');
-      return { ok: false };
-    }
-
-    const path = postId
-      ? `/${categorySlug}/${slug}?pid=${postId}`
-      : `/${categorySlug}/${slug}`;
-    goToMainPostView(path);
-    setStatusMsg(`👁 방금 게시글 → ${path}`);
-    return { ok: true };
+    setStatusMsg('⚠️ 게시 후 게시글보기를 이용할 수 있습니다.');
+    return { ok: false };
   }, [draft.categorySlug, draft.postId, draft.postSlug]);
 
   return (

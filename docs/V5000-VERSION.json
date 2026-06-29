@@ -5,14 +5,14 @@
     "MINOR": "공개 사이트·UI 배치 (0 = baseline 0dff010)",
     "PATCH": "글쓰기·도구·인프라 배치 (누적)"
   },
-  "version": "5.0.0.20",
-  "label": "V5.0.0.20",
-  "commit": "b97e78f",
-  "commitFull": "b97e78f09651a5036c1fbcd1e472d6728c5ec109",
-  "deploymentId": "dpl_FChpHTtBbai7fr1FysqBQarpAz8t",
+  "version": "5.0.0.21",
+  "label": "V5.0.0.21",
+  "commit": "",
+  "commitFull": "",
+  "deploymentId": "dpl_3Vdc76Xoa8BFNVDmbZxjGtv2nZwv",
   "www": "https://www.nutrifarmer.kr/",
   "wwwSynced": true,
   "abcSynced": true,
-  "summary": "Write AI log border scroll and top button border seam fixes",
-  "updatedAt": "2026-06-28T21:50:00+09:00"
+  "summary": "Single post PC image contain, category hero fix, write view-post navigation",
+  "updatedAt": "2026-06-29T22:30:00+09:00"
 }

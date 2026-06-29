@@ -957,16 +957,21 @@ body {
 }
 .nf-single__thumb {
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: 1.75rem;
-  aspect-ratio: 16/9;
+  aspect-ratio: auto;
   position: relative;
   background: #e8eef5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 .nf-single__thumb img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: top center;
   display: block;
 }
 .nf-single__back {
@@ -2524,11 +2529,25 @@ a.nf-preview-card-link:hover,
 .nf-cat-single-hero {
   position: relative;
   width: 100%;
-  min-height: min(55vh, 560px);
-  background: #0a1628;
+  min-height: 0;
+  height: auto;
+  background: #e8eef5;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.nf-cat-single-hero__img {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  max-height: none;
+  object-fit: contain;
+  object-position: top center;
+  display: block;
+  border-radius: 8px;
 }
 .nf-cat-single-hero--empty {
   display: flex;
@@ -3095,23 +3114,101 @@ a.nf-preview-card-link:hover,
   padding-bottom: 3rem !important;
 }
 
-/* 단일글: 대표이미지와 본문 5줄이 한 화면에 들어오도록 이미지 높이 제한 */
+/* 단일글: 대표이미지 전체 노출(상단 잘림 방지), 최대 높이만 제한 */
 .nf-single__thumb {
   aspect-ratio: auto !important;
-  height: min(42vw, calc(100dvh - var(--nf-top-bar-h) - var(--nf-nav-bar-h) - (0.9rem * 1.25) - (0.7rem * 1.8 * 5) - 3.5rem)) !important;
-  min-height: 180px;
+  height: auto !important;
+  min-height: 0 !important;
   margin-bottom: 0.75rem !important;
+  align-items: flex-start !important;
 }
 .nf-single__thumb img {
-  object-fit: cover;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  object-position: top center !important;
 }
 .nf-single-body {
   margin-top: 0 !important;
 }
 
-/* 카테고리 대표이미지도 같은 화면 노출 기준에 맞춰 과도한 높이를 제한 */
+/* 카테고리 대표이미지 — 단일글과 동일(contain, PC·모바일) */
 .nf-cat-single-hero {
   min-height: 0 !important;
-  height: min(42vw, calc(100dvh - var(--nf-top-bar-h) - var(--nf-nav-bar-h) - (0.9rem * 1.25) - (0.75rem * 5) - 3.5rem)) !important;
+  height: auto !important;
+  overflow: visible !important;
   margin-bottom: 0.75rem !important;
+  background: #e8eef5 !important;
+}
+.nf-cat-single-hero__img {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  object-position: top center !important;
+}
+
+/* 단일글 배너제목 — 제목 글씨 하단을 배너 높이 중앙선에 맞춤 */
+.nf-post-banner.nf-single-banner-band .nf-post-banner__content {
+  position: relative !important;
+  display: block !important;
+  height: 100% !important;
+  width: 100% !important;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+.nf-post-banner.nf-single-banner-band .nf-post-banner__title {
+  position: absolute !important;
+  left: 0;
+  right: 0;
+  bottom: 50% !important;
+  margin: 0 !important;
+  width: 100%;
+  text-align: center;
+}
+.nf-post-banner.nf-single-banner-band .nf-post-banner__meta {
+  position: absolute !important;
+  left: 0;
+  right: 0;
+  top: 50% !important;
+  margin: 0 !important;
+  justify-content: center;
+}
+
+/* ══════════════════════════════════════════════
+   V5.0.0.21 — 단일글 대표·본문 이미지 잘림 방지
+══════════════════════════════════════════════ */
+.nf-single__thumb {
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+.nf-single__thumb img {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  object-position: top center !important;
+}
+.nf-single-body figure,
+.nf-single-body .wp-block-image {
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.nf-single-body img,
+.nf-single-body figure img {
+  display: block;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  object-position: center top;
+  margin-left: auto;
+  margin-right: auto;
 }

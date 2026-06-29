@@ -28,6 +28,7 @@
 | **V5.0.0.18** | `395e678` | `dpl_8WvcoJ1GdJ2HJ5Fie2uAfGCuuKoL` | 글쓰기 기존 HOME 복원 · 신규 HOME 제거 · 새글쓰기 좌측 이동 |
 | **V5.0.0.19** | `b97e78f` | `dpl_3QnBkgkGQP8Y5o6d37nfWd2igBVp` | 글쓰기 최상단 타이틀바 높이 50% 확대 |
 | **V5.0.0.20** | `b97e78f` | `dpl_FChpHTtBbai7fr1FysqBQarpAz8t` | AI응답창 테두리·스크롤 · 상단 버튼 테두리·구분선 보정 |
+| **V5.0.0.21** | (this commit) | `dpl_3Vdc76Xoa8BFNVDmbZxjGtv2nZwv` | 단일글·카테고리 PC 이미지 잘림(contain) · 게시글보기 안정화 |
 
 ### 문서 (2026-06-29)
 

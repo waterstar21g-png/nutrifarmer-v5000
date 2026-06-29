@@ -124,7 +124,9 @@ export default async function PostPage({ params, searchParams }: Props) {
 
   return (
     <div className="nf-single-page nf-single-compact">
-      <SinglePostFromWrite />
+      <Suspense fallback={null}>
+        <SinglePostFromWrite />
+      </Suspense>
 
       <div className="nf-post-banner nf-single-banner-band" id="nf-single-banner-band">
         <div className="nf-post-banner__content">

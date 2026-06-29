@@ -17,8 +17,10 @@ export async function GET(req: NextRequest) {
   const titleSearch = searchParams.get('search_title') ?? undefined;
   const bodySearch = searchParams.get('search_body') ?? undefined;
   const includeAll = searchParams.get('mine') === '0';
+  const mineOnly = searchParams.has('mine') && searchParams.get('mine') !== '0';
   const cat = categorySlug?.trim() || undefined;
   const onlyCategory =
+    !mineOnly &&
     Boolean(cat) &&
     !titleSearch?.trim() &&
     !bodySearch?.trim() &&

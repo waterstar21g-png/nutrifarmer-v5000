@@ -2,6 +2,7 @@ import { getLatestPreviewPosts, getPreviewPostsBySlugs } from '@/lib/home-posts'
 import { ABOUT_ITEMS, FAMILY_ITEMS, SHOWCASE_CATS } from '@/lib/site-data';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
+import { WriteOpenerBridge } from '@/components/WriteOpenerBridge';
 import { HomePreviewProvider } from '@/components/home/HomePreviewProvider';
 
 const FOOTER_CATEGORY_SLUGS = [
@@ -20,6 +21,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <HomePreviewProvider>
+      <WriteOpenerBridge />
       <SiteHeader />
       <main>{children}</main>
       <SiteFooter recentPosts={recentPosts} postsBySlug={footerPostsBySlug} />

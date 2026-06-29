@@ -15,7 +15,7 @@ function sessionSecret(): string {
   if (!secret && process.env.NODE_ENV === 'production') {
     throw new Error('AUTH_SESSION_SECRET is required in production');
   }
-  return secret ?? 'nf-v5000-dev-session-secret';
+  return secret || 'nf-v5000-dev-session-secret';
 }
 
 export function encodeSession(payload: Omit<V5000Session, 'exp'> & { exp?: number }, remember = false): string {

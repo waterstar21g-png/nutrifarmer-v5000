@@ -21,10 +21,7 @@ export async function runWriteAi(
     const data = (await res.json()) as { ok?: boolean; text?: string; code?: string; message?: string };
 
     if (res.status === 401) {
-      return {
-        text: '⚠️ AI 사용을 위해 로그인이 필요합니다. 상단 [로그인] 후 다시 시도해 주세요.',
-        source: 'local',
-      };
+      throw new Error('LOGIN_REQUIRED');
     }
 
     if (data.ok && data.text) {
@@ -45,7 +42,8 @@ export async function runWriteAi(
         source: 'local',
       };
     }
-  } catch {
+  } catch (e) {
+    if (e instanceof Error && e.message === 'LOGIN_REQUIRED') throw e;
     /* fall through */
   }
 

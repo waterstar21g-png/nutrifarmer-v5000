@@ -220,25 +220,49 @@ export function openWriteWindow(): void {
   window.location.href = '/write';
 }
 
-/** 글쓰기 → 메인 창 단일글 페이지 (opener 이동 + 글쓰기 창 숨김) */
+/** 게시글보기 URL 비교 — from·캐시방지 파라미터 제외 */
+export function normalizePostViewPath(pathname: string, search = ''): string {
+  const u = new URL(pathname + search, 'http://nf.local');
+  u.searchParams.delete('from');
+  u.searchParams.delete('_nfv');
+  const qs = u.searchParams.toString();
+  return u.pathname + (qs ? `?${qs}` : '');
+}
+
+/** 글쓰기 → 메인 창 단일글 페이지 (opener 직접 이동 + postMessage 보조) */
 export function goToMainPostView(path: string): void {
   if (typeof window === 'undefined') return;
 
   const url = new URL(path, window.location.origin);
   url.searchParams.set('from', 'write');
+  url.searchParams.delete('_nfv');
   const target = `${url.pathname}${url.search}`;
+  const targetNorm = normalizePostViewPath(url.pathname, url.search);
 
   const opener = window.opener;
 
   if (opener && !opener.closed) {
     registerWritePopupOnOpener(window, opener);
     try {
-      opener.location.assign(target);
+      const curNorm = normalizePostViewPath(
+        opener.location.pathname,
+        opener.location.search,
+      );
+      if (curNorm === targetNorm) {
+        opener.postMessage({ type: 'nf-scroll-single-banner' }, window.location.origin);
+      } else {
+        opener.postMessage({ type: 'nf-open-post', path: target }, window.location.origin);
+        opener.location.assign(target);
+      }
+      opener.focus();
     } catch {
-      opener.location.href = target;
+      try {
+        opener.postMessage({ type: 'nf-open-post', path: target }, window.location.origin);
+      } catch {
+        /* ignore */
+      }
     }
-    opener.focus();
-    window.setTimeout(() => hideWritePopup(window), 120);
+    hideWritePopup(window);
     return;
   }
 

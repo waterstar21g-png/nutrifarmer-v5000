@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { PostContentImage } from '@/components/PostContentImage';
 import { ALL_CATEGORY_SLUGS } from '@/lib/site-data';
 import { getSidebarPosts } from '@/lib/site-content';
 import { listPublishedByCategory } from '@/lib/v5000-content/posts';
@@ -57,11 +56,13 @@ export default async function CategoryPage({ params }: Props) {
         <main className="nf-cat-single-main">
           <div className="nf-cat-single-hero">
             {firstImageUrl ? (
-              <PostContentImage
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={firstImageUrl}
                 alt={`${cat.name} 대표 이미지`}
-                fill
-                priority
+                className="nf-cat-single-hero__img"
+                loading="eager"
+                decoding="async"
               />
             ) : (
               <div className="nf-cat-single-hero--empty">

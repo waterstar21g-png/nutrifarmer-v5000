@@ -16,6 +16,7 @@ import {
 } from '@/lib/write-ai-commands';
 import { openAiCommandsWindow } from '@/lib/write-ai-window';
 import { stripBodyPlain } from '@/lib/write-body-plain';
+import { openAuthFromWritePopup } from '@/lib/auth-navigation';
 
 type MaterialMode = 'write' | 'photo' | 'video' | 'file';
 
@@ -110,7 +111,17 @@ export function ChatPanel({
     await new Promise(r => setTimeout(r, 120));
 
     const context = stripBodyPlain(draft.body);
-    const { text: body } = await runWriteAi(cmdId, trimmed, context);
+    let body: string;
+    try {
+      ({ text: body } = await runWriteAi(cmdId, trimmed, context));
+    } catch (e) {
+      if (e instanceof Error && e.message === 'LOGIN_REQUIRED') {
+        openAuthFromWritePopup(`/login?redirect_to=${encodeURIComponent('/write')}`);
+        body = '⚠️ 로그인이 만료되었습니다. 로그인 창을 열었습니다. 로그인 후 AI 명령을 다시 실행해 주세요.';
+      } else {
+        body = '⚠️ AI 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+      }
+    }
 
     setTurns(prev =>
       prev.map(t => (t.id === id ? { ...t, reply: body, loading: false } : t)),
